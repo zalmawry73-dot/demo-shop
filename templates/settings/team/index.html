@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}فريق المتجر | منصة التاجر{% endblock %}
+
+{% block page_title %}فريق المتجر (0/20){% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/settings" class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center"
+            style="width: 40px; height: 40px;">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <h4 class="fw-bold mb-0">فريق المتجر (0/20)</h4>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a href="/settings/team/groups" class="btn btn-outline-secondary">
+            مجموعات فريق العمل
+        </a>
+        <a href="/settings/team/create" class="btn btn-primary px-4">
+            <i class="fa-solid fa-plus me-2"></i> إنشاء
+        </a>
+        <!-- Optional: Search or other tools can be added here or below -->
+        <button class="btn btn-light border">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3" style="width: 40%">الاسم / الصلاحيات</th>
+                        <th class="py-3">البريد الإلكتروني / الجوال</th>
+                        <th class="py-3">الحالة</th>
+                        <th class="pe-4 py-3 text-end">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="teamList">
+                    <!-- Loaded via JS -->
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Empty State Template (Hidden) -->
+<template id="emptyStateTemplate">
+    <tr>
+        <td colspan="4" class="text-center py-5">
+            <div class="py-5">
+                <div class="mb-3 text-muted">
+                    <i class="fa-solid fa-users fa-3x opacity-50"></i>
+                </div>
+                <h5 class="fw-bold">لم يتم إضافة أعضاء فريق</h5>
+                <p class="text-muted">أضف أعضاء فريق للبدء في التعاون.</p>
+                <a href="/settings/team/create" class="btn btn-primary px-4 mt-2">
+                    إضافة عضو فريق
+                </a>
+            </div>
+        </td>
+    </tr>
+</template>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/settings_team.js?v=2"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', loadTeamMembers);
+</script>
+{% endblock %}

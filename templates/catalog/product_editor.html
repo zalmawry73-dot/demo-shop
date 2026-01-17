@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}{{ '✏️ تعديل منتج' if mode == 'edit' else '➕ إضافة منتج جديد' }} | منصة التاجر{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/product_catalog.css') }}">
+<!-- Quill.js for rich text -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div style="display:flex; align-items:center; gap:15px;">
+        <button class="action-btn secondary" onclick="window.location.href='/catalog/products'"
+            style="border-radius:50%; width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center;">
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <h1>{{ '✏️ تعديل منتج' if mode == 'edit' else '➕ إضافة منتج جديد' }}</h1>
+    </div>
+    <div class="header-actions" style="display:flex; gap:10px">
+        <button class="action-btn" id="saveBtn">💾 حفظ</button>
+    </div>
+</div>
+
+<!-- Tabs -->
+<nav class="tabs">
+    <button class="tab active" data-target="tab-general">
+        <i class="fa-solid fa-info-circle"></i> المعلومات العامة
+    </button>
+    <button class="tab" data-target="tab-media">
+        <i class="fa-solid fa-images"></i> الوسائط
+    </button>
+    <button class="tab" data-target="tab-pricing">
+        <i class="fa-solid fa-tag"></i> التسعير والمخزون
+    </button>
+    <button class="tab" data-target="tab-variants">
+        <i class="fa-solid fa-layer-group"></i> الأنواع (Variants)
+    </button>
+    <button class="tab" data-target="tab-custom">
+        <i class="fa-solid fa-list-ul"></i> بيانات إضافية
+    </button>
+    <button class="tab" data-target="tab-seo">
+        <i class="fa-solid fa-search"></i> تحسين محركات البحث
+    </button>
+</nav>
+
+<!-- Tab Panels -->
+<section class="tab-panels">
+
+    <!-- 1️⃣ General Info -->
+    <div class="panel active" id="tab-general">
+        <div class="form-group">
+            <label for="productName">اسم المنتج *</label>
+            <input type="text" id="productName" class="input-style" placeholder="مثال: قميص قطني فاخر" required>
+        </div>
+
+        <div class="form-group">
+            <label for="productDesc">الوصف (HTML)</label>
+            <div id="productDesc" class="rich-editor"></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group" style="flex:1">
+                <label for="productCategory">التصنيف</label>
+                <select id="productCategory" class="input-style">
+                    <option value="">اختر التصنيف...</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="flex:1">
+                <label for="productType">نوع المنتج</label>
+                <select id="productType" class="input-style">
+                    <option value="Physical">مادي (Physical)</option>
+                    <option value="Digital">رقمي (Digital)</option>
+                    <option value="Service">خدمة (Service)</option>
+                    <option value="Food">طعام (Food)</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="flex:1">
+                <label for="productStatus">الحالة</label>
+                <select id="productStatus" class="input-style">
+                    <option value="Draft">مسودة</option>
+                    <option value="Active">نشط</option>
+                    <option value="Archived">مؤرشف</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group inline">
+            <label><input type="checkbox" id="taxable"> خاضع للضريبة (15%)</label>
+        </div>
+    </div>
+
+    <!-- 2️⃣ Media -->
+    <div class="panel" id="tab-media">
+        <div class="media-uploader" id="mediaUploader">
+            <i class="fa-solid fa-cloud-upload-alt" style="font-size:3rem; color:#9ca3af; margin-bottom:10px;"></i>
+            <p style="margin:0; font-size:1.1rem; color:#6b7280;">اسحب الصور هنا أو اضغط للتحديد</p>
+            <p style="margin-top:5px; font-size:0.9rem; color:#9ca3af;">يدعم: JPG, PNG, WebP (حتى 5 ميغابايت)
+            </p>
+            <input type="file" multiple accept="image/*" hidden id="mediaInput">
+        </div>
+        <div class="media-preview" id="mediaPreview">
+            <!-- Images will be added here -->
+        </div>
+    </div>
+
+    <!-- 3️⃣ Pricing & Inventory -->
+    <div class="panel" id="tab-pricing">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="basePrice">السعر الأساسي *</label>
+                <input type="number" id="basePrice" class="input-style" step="0.01" min="0" placeholder="0.00" required>
+            </div>
+
+            <div class="form-group">
+                <label for="costPrice">سعر التكلفة (اختياري)</label>
+                <input type="number" id="costPrice" class="input-style" step="0.01" min="0" placeholder="0.00">
+                <small style="color:#6b7280;">لحساب هامش الربح</small>
+            </div>
+
+            <div class="form-group">
+                <label for="comparePrice">السعر قبل الخصم</label>
+                <input type="number" id="comparePrice" class="input-style" step="0.01" min="0" placeholder="0.00">
+                <small style="color:#6b7280;">لإظهار نسبة التوفير</small>
+            </div>
+        </div>
+
+        <div class="form-group inline">
+            <label><input type="checkbox" id="trackQty"> تتبع المخزون</label>
+        </div>
+
+        <div class="form-group" id="qtyGroup" style="display:none;">
+            <label for="stockQty">الكمية المتوفرة</label>
+            <input type="number" id="stockQty" class="input-style" min="0" value="0">
+        </div>
+    </div>
+
+    <!-- 4️⃣ Variants -->
+    <div class="panel" id="tab-variants">
+        <section class="options-builder">
+            <h3>خصائص المنتج (Options)</h3>
+            <p style="color:#6b7280; margin-bottom:15px;">أضف خصائص مثل اللون، المقاس لإنشاء متغيرات تلقائياً
+            </p>
+            <div id="optionsContainer"></div>
+            <button type="button" class="action-btn secondary" id="addOptionBtn">
+                <i class="fa-solid fa-plus"></i> إضافة خاصية
+            </button>
+        </section>
+
+        <section class="variants-table" style="margin-top:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0;">الأنواع المولدة (<span id="variantCount">0</span>)</h3>
+                <button type="button" class="btn btn-secondary" onclick="ProductEditor.regenerateVariants()">
+                    <i class="fa-solid fa-sync"></i> إعادة التوليد
+                </button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table id="variantsGrid">
+                    <thead>
+                        <tr id="variantHeaderRow">
+                            <th>SKU</th>
+                            <th>الكمية</th>
+                            <th>السعر</th>
+                        </tr>
+                    </thead>
+                    <tbody id="variantsGridBody">
+                        <tr>
+                            <td colspan="3" style="text-align:center; padding:20px; color:#9ca3af;">
+                                أضف خصائص المنتج لتوليد الأنواع تلقائياً
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- 5️⃣ Custom Fields -->
+    <div class="panel" id="tab-custom">
+        <div id="customFieldsContainer"></div>
+        <div id="customFieldsLoader"></div>
+    </div>
+
+    <!-- 6️⃣ SEO -->
+    <div class="panel" id="tab-seo">
+        <div class="form-group">
+            <label for="pageTitle">عنوان الصفحة (Page Title)</label>
+            <input type="text" id="pageTitle" class="input-style" maxlength="60"
+                placeholder="سيتم استخدام اسم المنتج إذا ترك فارغاً">
+            <small style="color:#6b7280;"><span id="titleCharCount">0</span> / 60 حرف</small>
+        </div>
+
+        <div class="form-group">
+            <label for="metaDesc">وصف الميتا (Meta Description)</label>
+            <textarea id="metaDesc" class="input-style" rows="3" maxlength="160"
+                placeholder="وصف مختصر للمنتج يظهر في نتائج البحث"></textarea>
+            <small style="color:#6b7280;"><span id="descCharCount">0</span> / 160 حرف</small>
+        </div>
+
+        <div class="form-group">
+            <label for="slug">الرابط (Slug) *</label>
+            <input type="text" id="slug" class="input-style" placeholder="product-name-in-english" required>
+            <small style="color:#6b7280;">سيتم توليده تلقائياً من اسم المنتج</small>
+        </div>
+
+        <div class="seo-preview" id="seoPreview">
+            <p style="margin:0 0 10px; font-size:0.9rem; color:#6b7280; font-weight:600;">👁️ معاينة في جوجل</p>
+            <p class="preview-title">عنوان المنتج</p>
+            <p class="preview-link">https://yourstore.com/<span id="previewSlug">slug</span></p>
+            <p class="preview-desc">وصف الميتا سيظهر هنا...</p>
+        </div>
+    </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script src="{{ url_for('static', path='js/product_editor.js') }}?v=6"></script>
+<script>
+    // Initialize editor
+    document.addEventListener('DOMContentLoaded', () => {
+        const mode = "{{ mode }}";
+        const productId = "{{ product_id if mode == 'edit' else '' }}";
+        // Ensure ProductEditor exists before calling init
+        if (typeof ProductEditor !== 'undefined') {
+            ProductEditor.init(mode, productId);
+        } else {
+            console.error('ProductEditor is not defined!');
+        }
+    });
+</script>
+{% endblock %}

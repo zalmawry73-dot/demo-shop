@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم | منصة التاجر{% endblock %}
+
+{% block page_title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>لوحة التحكم</h1>
+    <div class="actions">
+        <button class="btn btn-primary" onclick="window.location.href='/catalog/products/new'"><i
+                class="fa-solid fa-plus"></i> منتج جديد</button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="metrics-grid">
+    <div class="card metric-card">
+        <div class="metric-title">إجمالي المبيعات</div>
+        <div class="metric-value" id="totalSales">...</div>
+        <div class="metric-change positive">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+            +15% مقارنة بالشهر الماضي
+        </div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-title">عدد الطلبات</div>
+        <div class="metric-value" id="ordersCount">...</div>
+        <div class="metric-change positive">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+            +8% مقارنة بالشهر الماضي
+        </div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-title">الزيارات</div>
+        <div class="metric-value" id="visitsCount">...</div>
+        <div class="metric-change negative">
+            <i class="fa-solid fa-arrow-trend-down"></i>
+            -3% مقارنة بالشهر الماضي
+        </div>
+    </div>
+</div>
+<div class="card stat-card">
+    <div class="icon-wrapper green"><i class="fa-solid fa-box-open"></i></div>
+    <div class="stat-info">
+        <h3>12</h3>
+        <p>منتجات نفذت</p>
+    </div>
+</div>
+
+<!-- Reports/Charts Section -->
+<div class="card" style="margin-bottom: 30px;">
+    <div class="card-header"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>تقارير المبيعات</h3>
+        <select style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;">
+            <option>آخر 7 أيام</option>
+            <option>هذا الشهر</option>
+        </select>
+    </div>
+    <div style="height: 300px;">
+        <canvas id="salesChart"></canvas>
+    </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="card table-card">
+    <div class="card-header">
+        <h2>أحدث الطلبات</h2>
+        <a href="/orders" class="view-all">عرض الكل</a>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>العميل</th>
+                    <th>التاريخ</th>
+                    <th>الحالة</th>
+                    <th>المجموع</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#10234</td>
+                    <td>محمد أحمد</td>
+                    <td>2023-10-25</td>
+                    <td><span class="status-badge success">مكتمل</span></td>
+                    <td>450.00 ر.س</td>
+                </tr>
+                <tr>
+                    <td>#10235</td>
+                    <td>سارة علي</td>
+                    <td>2023-10-25</td>
+                    <td><span class="status-badge warning">جاري التجهيز</span></td>
+                    <td>120.00 ر.س</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Dummy data loading function (replace with actual API calls)
+    async function loadDashboardData() {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        try {
+            // 1. Update Stats Cards
+            document.getElementById('totalSales').textContent = '12,345.00 ر.س';
+            document.getElementById('ordersCount').textContent = '250';
+            document.getElementById('visitsCount').textContent = '5,123';
+
+            // 3. Render Chart
+            const chartData = {
+                labels: ['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04', '2023-10-05', '2023-10-06', '2023-10-07'],
+                data: [500, 1500, 750, 2000, 1200, 1800, 2500]
+            };
+
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'المبيعات (ر.س)',
+                        data: chartData.data,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error("Error loading dashboard:", error);
+        }
+    }
+
+    loadDashboardData();
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة المنتجات | منصة التاجر{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/product_catalog.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block page_title %}إدارة المنتجات{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h1>كتالوج المنتجات</h1>
+        <p style="color:#64748b; margin-top:5px">إدارة المنتجات والمخزون من مكان واحد</p>
+    </div>
+    <div class="actions">
+        <button class="action-btn secondary" onclick="window.location.href='/catalog/api/products/export'">
+            <i class="fa-solid fa-upload"></i> تصدير
+        </button>
+        <button class="action-btn secondary" onclick="document.getElementById('importFile').click()">
+            <i class="fa-solid fa-download"></i> استيراد
+        </button>
+        <input type="file" id="importFile" accept=".xlsx,.xls" hidden onchange="ProductsManager.handleImport(event)">
+        <button class="action-btn" onclick="window.location.href='/catalog/products/new'">
+            <i class="fa-solid fa-plus"></i> إضافة منتج
+        </button>
+    </div>
+</div>
+
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" id="breadcrumbsContainer" class="mb-4" style="display:none">
+    <ol class="breadcrumb">
+        <!-- Injected by JS -->
+    </ol>
+</nav>
+
+<!-- Filters -->
+<div class="filters-bar">
+    <div class="filter-group" style="flex: 2;">
+        <label>بحث</label>
+        <input type="text" id="searchInput" class="input-style" placeholder="اسم المنتج، SKU، أو الباركود...">
+    </div>
+    <div class="filter-group">
+        <label>التصنيف</label>
+        <select id="categoryFilter" class="input-style">
+            <option value="">كل التصنيفات</option>
+            <!-- Populated by JS -->
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>النوع</label>
+        <select id="typeFilter" class="input-style">
+            <option value="">الكل</option>
+            <option value="Physical">منتج جاهز (Physical)</option>
+            <option value="Service">خدمة (Service)</option>
+            <option value="Food">طعام (Food)</option>
+            <option value="Digital">رقمي (Digital)</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>المخزون</label>
+        <select id="stockFilter" class="input-style">
+            <option value="all">الكل</option>
+            <option value="low">منخفض</option>
+            <option value="out">نفذت الكمية</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>الحالة</label>
+        <select id="statusFilter" class="input-style">
+            <option value="">الكل</option>
+            <option value="Active">نشط</option>
+            <option value="Draft">مسودة</option>
+            <option value="Archived">مؤرشف</option>
+        </select>
+    </div>
+</div>
+
+<!-- Bulk Actions -->
+<div class="bulk-actions" id="bulkActions">
+    <span>تم تحديد <span id="selectedCount">0</span> منتج</span>
+    <div class="actions-group">
+        <button class="btn-bulk delete" onclick="ProductsManager.bulkDelete()">
+            <i class="fa-solid fa-trash"></i> حذف
+        </button>
+        <button class="btn-bulk" onclick="ProductsManager.bulkUpdateStatus('Active')">
+            <i class="fa-solid fa-eye"></i> تفعيل
+        </button>
+        <button class="btn-bulk" onclick="ProductsManager.bulkUpdateStatus('Archived')">
+            <i class="fa-solid fa-eye-slash"></i> أرشفة
+        </button>
+        <button class="btn-bulk" onclick="ProductsManager.bulkExport()">
+            <i class="fa-solid fa-file-export"></i> تصدير المحدد
+        </button>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="card table-card">
+    <div class="table-responsive">
+        <table id="productsTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">
+                        <input type="checkbox" id="selectAll" onclick="ProductsManager.toggleSelectAll()">
+                    </th>
+                    <th style="width: 80px;">الصورة</th>
+                    <th>اسم المنتج</th>
+                    <th>النوع</th>
+                    <th>السعر</th>
+                    <th>المخزون</th>
+                    <th>التصنيف</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="productsTableBody">
+                <!-- Data Injected Here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="pagination"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/products_list.js') }}?v=3"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        ProductsManager.init();
+    });
+</script>
+{% endblock %}

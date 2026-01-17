@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}عنوان مخزون | منصة التاجر{% endblock %}
+{% block page_title %}{{ 'تعديل عنوان' if warehouse else 'إضافة عنوان جديد' }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map {
+        height: 300px;
+        width: 100%;
+        border-radius: 8px;
+        z-index: 1;
+    }
+</style>
+
+<div class="row mb-5">
+    <div class="col-12 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/inventory/warehouses" class="btn btn-light rounded-circle shadow-sm"
+                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">{{ 'تعديل عنوان' if warehouse else 'عنوان جديد' }}</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form id="warehouseForm">
+                    <input type="hidden" id="whId" value="{{ warehouse.id if warehouse else '' }}">
+                    <input type="hidden" name="latitude" id="latitude"
+                        value="{{ warehouse.latitude if warehouse and warehouse.latitude else 24.7136 }}">
+                    <input type="hidden" name="longitude" id="longitude"
+                        value="{{ warehouse.longitude if warehouse and warehouse.longitude else 46.6753 }}">
+
+                    <!-- Name Section -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">اسم العنوان (العربية) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="name"
+                                value="{{ warehouse.name if warehouse else '' }}" required
+                                placeholder="مثال: المستودع الرئيسي">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">اسم العنوان (الإنجليزية)</label>
+                            <input type="text" class="form-control" name="name_en" dir="ltr"
+                                value="{{ warehouse.name_en if warehouse and warehouse.name_en else '' }}"
+                                placeholder="e.g. Main Warehouse">
+                        </div>
+                    </div>
+
+                    <!-- Selling Channels -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-2">قنوات البيع</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="channelOnline" {{ 'checked' if not
+                                    warehouse or warehouse.branch_type.value in ['warehouse', 'both' ] else '' }}>
+                                <label class="form-check-label" for="channelOnline">
+                                    المتجر الإلكتروني
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="channelPos" {{ 'checked' if
+                                    warehouse and warehouse.branch_type.value in ['pos_point', 'both' ] else '' }}>
+                                <label class="form-check-label" for="channelPos">
+                                    نقاط بيع زد
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-text mt-2">حدد القنوات التي سيخدمها هذا المخزون</div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Address Section -->
+                    <h5 class="mb-3">العنوان والموقع</h5>
+
+                    <div class="mb-3">
+                        <div id="map"></div>
+                        <div class="form-text text-muted"><i class="fa-solid fa-location-dot"></i> قم بتحريك الدبوس
+                            لتحديد الموقع الدقيق</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الدولة</label>
+                            <select class="form-select" name="country" disabled>
+                                <option value="السعودية" selected>المملكة العربية السعودية</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">المدينة <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="city" required
+                                value="{{ warehouse.city if warehouse and warehouse.city else '' }}"
+                                placeholder="الرياض">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الحي</label>
+                            <input type="text" class="form-control" name="district"
+                                value="{{ warehouse.district if warehouse and warehouse.district else '' }}"
+                                placeholder="حي الملقا">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الشارع</label>
+                            <input type="text" class="form-control" name="street"
+                                value="{{ warehouse.street if warehouse and warehouse.street else '' }}"
+                                placeholder="طريق الملك فهد">
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">تعيين كمخزون افتراضي</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="priority_index" value="0"
+                                    id="isDefault" {{ 'checked' if warehouse and warehouse.priority_index==0 else '' }}>
+                                <label class="form-check-label" for="isDefault">سيتم السحب من المستودع الافتراضي إذا لم
+                                    يتم تحديد مستودع</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">الحالة</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="isActive"
+                                    {{ 'checked' if not warehouse or warehouse.is_active else '' }}>
+                                <label class="form-check-label" for="isActive">الموقع نشط</label>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="/inventory/warehouses" class="btn btn-light">إلغاء</a>
+                        <button type="submit" class="btn btn-primary px-4" id="saveBtn">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize Map
+    const latInput = document.getElementById('latitude');
+    const lngInput = document.getElementById('longitude');
+
+    // Default to Riyadh if no coords
+    const initialLat = parseFloat(latInput.value) || 24.7136;
+    const initialLng = parseFloat(lngInput.value) || 46.6753;
+
+    const map = L.map('map').setView([initialLat, initialLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+
+    marker.on('dragend', function (e) {
+        const latlng = marker.getLatLng();
+        latInput.value = latlng.lat;
+        lngInput.value = latlng.lng;
+    });
+
+    map.on('click', function (e) {
+        marker.setLatLng(e.latlng);
+        latInput.value = e.latlng.lat;
+        lngInput.value = e.latlng.lng;
+    });
+
+    // Form Submit
+    document.getElementById('warehouseForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.textContent = 'جاري الحفظ...';
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        data.is_active = document.getElementById('isActive').checked;
+
+        // Handle Priority / Default
+        // If checked, index is 0. If not, maybe 1? Or just keep what logic?
+        // Simple logic: Default = 0, Otherwise = 10 (low priority)
+        data.priority_index = document.getElementById('isDefault').checked ? 0 : 10;
+
+        // Handle Branch Type (Channels)
+        const isOnline = document.getElementById('channelOnline').checked;
+        const isPos = document.getElementById('channelPos').checked;
+
+        if (isOnline && isPos) data.branch_type = 'both';
+        else if (isPos) data.branch_type = 'pos_point';
+        else data.branch_type = 'warehouse'; // Default if neither or just Online
+
+        // Location string composition (Legacy support)
+        data.location = `${data.city || ''} - ${data.district || ''}`;
+        data.country = "السعودية"; // Forced for now
+
+        // Fix types
+        data.latitude = parseFloat(data.latitude);
+        data.longitude = parseFloat(data.longitude);
+
+        const id = document.getElementById('whId').value;
+        const url = id ? `/api/warehouses/${id}` : '/api/warehouses';
+        const method = id ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || 'Failed');
+            }
+
+            notifier.showFlashToast('تم حفظ المخزن بنجاح', 'success');
+            window.location.href = '/inventory/warehouses';
+        } catch (error) {
+            console.error(error);
+            notifier.showToast('حدث خطأ أثناء الحفظ: ' + error.message, 'error');
+            btn.disabled = false;
+            btn.textContent = 'حفظ';
+        }
+    });
+</script>
+{% endblock %}

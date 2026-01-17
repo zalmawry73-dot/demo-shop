@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}رسائل الطلبات{% endblock %}
+
+{% block styles %}
+<style>
+    /* Custom Toggle Switch (iOS Style) */
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        background-color: #e5e7eb;
+        border-color: #e5e7eb;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+        cursor: pointer;
+    }
+
+    .form-switch .form-check-input:checked {
+        background-color: #8D5DA7;
+        /* Zid Purple */
+        border-color: #8D5DA7;
+    }
+
+    /* Custom Colors */
+    .text-purple {
+        color: #8D5DA7;
+    }
+
+    .bg-purple {
+        background-color: #8D5DA7;
+    }
+
+    .btn-purple {
+        background-color: #8D5DA7;
+        color: white;
+        border: none;
+    }
+
+    .btn-purple:hover {
+        background-color: #764a8e;
+        color: white;
+    }
+
+    /* Tabs Styling */
+    .nav-pills .nav-link {
+        color: #6b7280;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        margin-left: 0.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: #f3e8ff;
+        /* Light purple bg */
+        color: #8D5DA7;
+        border-color: #8D5DA7;
+    }
+
+    /* Accordion Styling */
+    .accordion-button:not(.collapsed) {
+        background-color: #f9fafb;
+        color: #111827;
+        box-shadow: none;
+    }
+
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0, 0, 0, .125);
+    }
+
+    .accordion-button::after {
+        margin-right: auto;
+        margin-left: 0;
+    }
+
+    /* Variables Chips */
+    .variable-chip {
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px dashed #d1d5db;
+    }
+
+    .variable-chip:hover {
+        background-color: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    /* Mobile Preview Mockup */
+    .iphone-mockup {
+        width: 300px;
+        height: 600px;
+        background-color: #111;
+        border-radius: 40px;
+        border: 8px solid #333;
+        position: relative;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .iphone-notch {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 25px;
+        background-color: #111;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        z-index: 10;
+    }
+
+    .iphone-screen {
+        width: 100%;
+        height: 100%;
+        background-color: #fff;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-header {
+        padding: 40px 15px 15px;
+        background-color: #f5f5f5;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chat-avatar {
+        width: 40px;
+        height: 40px;
+        background-color: #ddd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #666;
+    }
+
+    .message-bubble {
+        max-width: 80%;
+        margin: 20px 15px;
+        padding: 12px 16px;
+        border-radius: 18px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        position: relative;
+    }
+
+    .message-sent {
+        background-color: #DCF8C6;
+        /* WhatsApp Green */
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+        color: #000;
+    }
+
+    .message-sms {
+        background-color: #e5e5ea;
+        /* iOS SMS Gray */
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        color: #000;
+        margin-right: auto;
+        margin-left: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" dir="rtl">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-12 d-flex align-items-center gap-3">
+            <a href="/settings" class="text-decoration-none text-muted">
+                <i class="fa-solid fa-arrow-right fs-5"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">رسائل الطلبات</h4>
+        </div>
+    </div>
+
+    <!-- Info Banner / Balance -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small mb-1">الرصيد الحالي لرسائل SMS</div>
+                        <h5 class="fw-bold mb-0">لا يوجد رسائل</h5>
+                    </div>
+                    <div>
+                        <button class="btn btn-purple rounded-pill px-4">إضافة رصيد</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small mb-1">اسم المرسل</div>
+                        <h5 class="fw-bold mb-0">Zid</h5>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-secondary rounded-pill px-4 bg-white">تخصيص</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pills-sms-tab" data-bs-toggle="pill" data-bs-target="#pills-sms"
+                type="button" role="tab" onclick="switchChannel('sms')">الرسائل النصية</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-whatsapp-tab" data-bs-toggle="pill" data-bs-target="#pills-whatsapp"
+                type="button" role="tab" onclick="switchChannel('whatsapp')">رسائل الواتساب</button>
+        </li>
+    </ul>
+
+    <!-- Info Alert -->
+    <div
+        class="alert alert-warning rounded-3 mb-4 d-flex align-items-center gap-3 bg-warning-subtle border-warning-subtle text-warning-emphasis">
+        <i class="fa-solid fa-triangle-exclamation fs-4"></i>
+        <div>
+            <strong>تجنب إرسال محتوى دعائي</strong>
+            <br>
+            <small>لضمان الالتزام بلوائح هيئة الاتصالات، الرجاء عدم استخدام رسائل حالات الطلب لأغراض تسويقية أو ترويج
+                فعاليات أو توزيع أكواد خصم. قد يؤدي ذلك إلى إيقاف خدمة الرسائل</small>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="content-area" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-bottom border-light p-4 rounded-top-4">
+                    <h5 class="fw-bold mb-0">الحالات</h5>
+                    <p class="text-muted small mb-0">اختر حالات الطلب التي سيتم عند حدوثها إرسال رسالة تلقائياً.</p>
+                </div>
+                <div class="card-body p-0">
+                    <div class="accordion accordion-flush" id="statusesAccordion">
+                        <!-- Accordion Items will be injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 bg-transparent shadow-none">
+            <div class="modal-body p-0 text-center">
+                <div class="bg-white rounded-4 p-4 d-inline-block position-relative shadow-lg">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                    <h5 class="mb-4 fw-bold">معاينة رسائل الطلب | <span id="previewStatusTitle">جديد</span></h5>
+
+                    <div class="iphone-mockup">
+                        <div class="iphone-notch"></div>
+                        <div class="iphone-screen">
+                            <div class="chat-header">
+                                <div class="chat-avatar">
+                                    <i class="fa-solid fa-store"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold fs-6">Store Name</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">Today, 9:41 AM</div>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 d-flex flex-column p-3">
+                                <div class="message-bubble message-sent" id="previewMessageBody">
+                                    <!-- Message Content -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-purple px-5 rounded-pill"
+                            data-bs-dismiss="modal">إغلاق</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/settings/order_notifications.js?v=2"></script>
+{% endblock %}

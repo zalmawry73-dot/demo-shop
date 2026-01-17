@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأسئلة | منصة التاجر{% endblock %}
+
+{% block page_title %}الأسئلة{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-1">الأسئلة</h5>
+            <p class="text-muted small mb-0">إدارة استفسارات العملاء والإجابة عليها.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary"><i class="fa-solid fa-ellipsis-v"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <!-- Filters -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary active"
+                    onclick="filterQuestions('All', this)">الكل</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterQuestions('Pending', this)">بإنتظار الإجابة</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterQuestions('Approved', this)">منشور</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterQuestions('Rejected', this)">مرفوض</button>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i
+                            class="fa-solid fa-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="searchInput" placeholder="بحث"
+                        onkeyup="debounceSearch()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">السؤال</th>
+                        <th>المنتج</th>
+                        <th>العميل</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="questionsTableBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+        <div id="loading" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div id="emptyState" class="text-center py-5" style="display: none;">
+            <p class="text-muted">لا توجد أسئلة مطابقة.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Answer Modal -->
+<div class="modal fade" id="answerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">الإجابة على السؤال</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="answerQuestionId">
+                <div class="mb-3">
+                    <label class="form-label">السؤال</label>
+                    <p id="questionTextDisplay" class="fw-bold bg-light p-2 rounded"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">الإجابة</label>
+                    <textarea class="form-control" id="answerText" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" onclick="submitAnswer()">نشر الإجابة</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentStatus = 'All';
+    let searchTimeout;
+    const answerModal = new bootstrap.Modal(document.getElementById('answerModal'));
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadQuestions();
+    });
+
+    function filterQuestions(status, btn) {
+        currentStatus = status;
+
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active', 'btn-outline-primary'));
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.add('btn-outline-secondary'));
+
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-outline-primary', 'active');
+
+        loadQuestions();
+    }
+
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadQuestions();
+        }, 500);
+    }
+
+    async function loadQuestions() {
+        const query = document.getElementById('searchInput').value;
+        const tbody = document.getElementById('questionsTableBody');
+        const loading = document.getElementById('loading');
+        const emptyState = document.getElementById('emptyState');
+
+        tbody.innerHTML = '';
+        loading.style.display = 'block';
+        emptyState.style.display = 'none';
+
+        try {
+            let url = `/api/customers/questions?status=${currentStatus}`;
+            if (query) {
+                url += `&search=${encodeURIComponent(query)}`;
+            }
+
+            const response = await fetch(url);
+            const questions = await response.json();
+
+            loading.style.display = 'none';
+
+            if (questions.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            questions.forEach(q => {
+                const tr = document.createElement('tr');
+                let statusBadge = '';
+                if (q.status === 'Approved') statusBadge = '<span class="badge bg-success">منشور</span>';
+                else if (q.status === 'Rejected') statusBadge = '<span class="badge bg-danger">مرفوض</span>';
+                else statusBadge = '<span class="badge bg-warning text-dark">بانتظار الإجابة</span>';
+
+                tr.innerHTML = `
+                    <td>
+                        <p class="mb-1 fw-bold text-truncate" style="max-width: 300px;">${q.question_text}</p>
+                        ${q.answer_text ? `<small class="text-muted text-truncate d-block" style="max-width: 300px;">ج: ${q.answer_text}</small>` : ''}
+                    </td>
+                    <td>${q.product_name}</td>
+                    <td>${q.customer_name}</td>
+                    <td>${new Date(q.created_at).toLocaleDateString('en-GB')}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="openAnswerModal('${q.id}', '${escapeHtml(q.question_text)}', '${escapeHtml(q.answer_text || '')}')">إجابة</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="updateStatus('${q.id}', 'Approved')">موافرقة ونشر</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="updateStatus('${q.id}', 'Rejected')">رفض</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteQuestion('${q.id}')">حذف</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (error) {
+            console.error('Error loading questions:', error);
+            loading.style.display = 'none';
+        }
+    }
+
+    function openAnswerModal(id, question, answer) {
+        document.getElementById('answerQuestionId').value = id;
+        document.getElementById('questionTextDisplay').textContent = question;
+        document.getElementById('answerText').value = answer;
+        answerModal.show();
+    }
+
+    async function submitAnswer() {
+        const id = document.getElementById('answerQuestionId').value;
+        const answer = document.getElementById('answerText').value;
+
+        if (!answer.trim()) {
+            notifier.showToast('يرجى كتابة الإجابة', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/customers/questions/${id}/answer`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answer_text: answer })
+            });
+
+            if (response.ok) {
+                answerModal.hide();
+                loadQuestions();
+            } else {
+                notifier.showToast('فشل حفظ الإجابة', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            notifier.showToast('حدث خطأ', 'error');
+        }
+    }
+
+    async function updateStatus(id, status) {
+        try {
+            const response = await fetch(`/api/customers/questions/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            });
+            if (response.ok) {
+                loadQuestions();
+            } else {
+                notifier.showToast('فشل تحديث الحالة', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            notifier.showToast('حدث خطأ', 'error');
+        }
+    }
+
+    async function deleteQuestion(id) {
+        if (!await notifier.showConfirm('هل أنت متأكد من حذف هذا السؤال؟')) return;
+
+        try {
+            const response = await fetch(`/api/customers/questions/${id}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                loadQuestions();
+            } else {
+                notifier.showToast('فشل الحذف', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            notifier.showToast('حدث خطأ', 'error');
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+</script>
+{% endblock %}

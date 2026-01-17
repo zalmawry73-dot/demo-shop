@@ -1,0 +1,232 @@
+ممتاز! إليك دليل خطوة بخطوة كامل لنشر متجرك على Render.com:
+
+🚀 دليل نشر المتجر على Render.com
+📋 المتطلبات المسبقة
+قبل البدء، تأكد من توفر:
+
+✅ حساب GitHub (مجاني)
+✅ حساب Render.com (سنُنشئه معاً)
+✅ متصفح حديث
+✅ Git مثبت على جهازك
+📦 الخطوة 1: رفع المشروع على GitHub
+1.1 تثبيت Git (إذا لم يكن مثبتاً)
+powershell
+# تحقق من وجود Git
+git --version
+# إذا لم يكن مثبتاً، حمله من:
+# https://git-scm.com/download/win
+1.2 إنشاء Repository على GitHub
+اذهب إلى github.com
+سجل دخول (أو أنشئ حساب جديد)
+اضغط على أيقونة "+" في الأعلى → "New repository"
+املأ البيانات:
+Repository name: store-demo (أو أي اسم)
+Description: "E-commerce Store"
+Private: ✅ اختره إذا لا تريد أن يراه الجميع
+❌ لا تضع علامة على "Add a README file"
+اضغط "Create repository"
+1.3 رفع الكود لـ GitHub
+افتح PowerShell في مجلد d:\Store:
+
+powershell
+# الانتقال لمجلد المشروع
+cd d:\Store
+# تهيئة Git (إذا لم يكن مهيئاً)
+git init
+# إضافة ملف .gitignore (لتجاهل ملفات غير ضرورية)
+echo "venv/" > .gitignore
+echo "__pycache__/" >> .gitignore
+echo "*.pyc" >> .gitignore
+echo ".env" >> .gitignore
+echo "store.db" >> .gitignore
+# إضافة جميع الملفات
+git add .
+# عمل Commit
+git commit -m "Initial commit"
+# ربط Repository البعيد (استبدل USERNAME و REPO_NAME)
+git remote add origin https://github.com/USERNAME/REPO_NAME.git
+# رفع الكود
+git branch -M main
+git push -u origin main
+إذا طلب منك GitHub username/password:
+
+Username: اسم المستخدم
+Password: استخدم Personal Access Token بدلاً من كلمة المرور
+للحصول على Token: GitHub → Settings → Developer settings → Personal access tokens → Generate new token
+✅ الآن الكود على GitHub!
+
+🌐 الخطوة 2: إنشاء حساب Render.com
+اذهب إلى render.com
+اضغط "Get Started" أو "Sign Up"
+اختر "Sign up with GitHub" (الأسهل)
+اسمح لـ Render بالوصول لحسابك على GitHub
+✅ تم إنشاء الحساب!
+🗄️ الخطوة 3: إنشاء قاعدة بيانات PostgreSQL
+3.1 إنشاء Database
+من Dashboard الرئيسي، اضغط "New +"
+اختر "PostgreSQL"
+املأ البيانات:
+Name: store-db (أو أي اسم)
+Database: storedb
+User: storeuser
+Region: اختر أقرب منطقة (Europe Frankfurt للشرق الأوسط)
+Plan: اختر "Free" ($0/month)
+اضغط "Create Database"
+انتظر 1-2 دقيقة حتى يصبح Status: "Available" ✅
+3.2 نسخ Database URL
+اضغط على اسم Database الذي أنشأته
+في قسم "Connections"، ابحث عن "Internal Database URL"
+اضغط "Copy" لنسخ الرابط (سنحتاجه لاحقاً)
+شكله: postgresql://user:password@hostname/database
+🚀 الخطوة 4: إنشاء Web Service (الخادم)
+4.1 إنشاء Service جديد
+من Dashboard، اضغط "New +" → "Web Service"
+اختر "Build and deploy from a Git repository" → "Next"
+إذا لم تكن قد ربطت GitHub بعد:
+اضغط "Connect GitHub"
+اسمح بالوصول
+اختر Repository الذي رفعته (store-demo)
+اضغط "Connect"
+4.2 إعدادات Service
+املأ الحقول التالية:
+
+الإعدادات الأساسية:
+
+Name: store-app (أو أي اسم - سيكون جزء من الرابط)
+Region: نفس منطقة Database (مثل Europe - Frankfurt)
+Branch: main
+Runtime: Python 3
+Build & Deploy:
+
+Build Command:
+pip install -r requirements.txt
+Start Command:
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Plan:
+
+اختر "Free" ($0/month)
+4.3 إضافة Environment Variables (متغيرات البيئة)
+⚠️ هذه خطوة مهمة جداً!
+
+اضغط "Advanced" لتوسيع الخيارات المتقدمة، ثم:
+
+في قسم "Environment Variables"، اضغط "Add Environment Variable"
+أضف المتغيرات التالية:
+Key	Value
+DATABASE_URL	📋 الصق Internal Database URL من الخطوة 3.2
+SECRET_KEY	أي نص عشوائي طويل (مثل: my-super-secret-key-12345)
+مثال:
+
+DATABASE_URL = postgresql://storeuser:abc123@dpg-xyz.frankfurt-postgres.render.com/storedb
+SECRET_KEY = my-very-long-secret-key-for-jwt-tokens-12345
+4.4 إنشاء Service
+راجع جميع الإعدادات
+اضغط "Create Web Service"
+سيبدأ Render في:
+تحميل الكود من GitHub ⏳
+بناء المشروع (install requirements) ⏳
+تشغيل الخادم ⏳
+⏱️ انتظر 3-5 دقائق حتى يكتمل النشر
+
+✅ الخطوة 5: التحقق من النشر
+5.1 مراقبة Logs
+في صفحة Web Service، اذهب لتبويب "Logs"
+شاهد الـ logs تظهر مباشرة
+ابحث عن رسالة مثل:
+Application startup complete
+Uvicorn running on http://0.0.0.0:10000
+5.2 فتح المتجر
+في الأعلى، ستجد رابط المتجر بصيغة:
+https://store-app-xxxx.onrender.com
+اضغط على الرابط أو انسخه وافتحه في متصفح جديد
+🎉 المتجر يعمل الآن!
+🔐 الخطوة 6: إنشاء قاعدة البيانات وبيانات تجريبية
+⚠️ مشكلة: قاعدة البيانات فارغة الآن!
+
+الحل - خياران:
+الخيار 1: تشغيل Migration عبر Render Shell
+
+في صفحة Web Service، اذهب لتبويب "Shell"
+اكتب الأوامر التالية:
+bash
+# إنشاء الجداول
+python create_db.py
+# إضافة بيانات تجريبية (إذا كان لديك seed script)
+python seed_data.py
+الخيار 2: استخدام PostgreSQL Client
+
+إذا لم يعمل Shell، يمكنك:
+
+تحميل DBeaver أو pgAdmin
+الاتصال بقاعدة البيانات باستخدام External Database URL
+تشغيل SQL scripts يدوياً
+📝 الخطوة 7: تسجيل الدخول واختبار
+افتح المتجر: https://your-app.onrender.com
+اذهب لصفحة تسجيل الدخول: /login
+استخدم:
+Email: admin@store.com
+Password: admin123
+اختبر الصفحات:
+✅ Dashboard
+✅ المنتجات
+✅ الطلبات
+✅ العملاء
+✅ الإعدادات
+🔄 تحديث المتجر (في المستقبل)
+عندما تُحدّث الكود محلياً:
+
+powershell
+cd d:\Store
+# حفظ التغييرات
+git add .
+git commit -m "وصف التحديث"
+git push
+# Render سيعيد النشر تلقائياً! 🎉
+⚠️ ملاحظات مهمة
+1. النوم التلقائي
+الـ Free Plan ينام بعد 15 دقيقة بدون زوار
+أول زيارة بعد النوم تأخذ 30-60 ثانية للاستيقاظ
+الحل: استخدم خدمة Uptime مثل UptimeRobot لعمل ping كل 10 دقائق
+2. تحديد عدد Workers
+إذا كان التطبيق بطيئاً، يمكن زيادة Workers في Start Command:
+
+bash
+gunicorn app.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+3. Static Files
+تأكد من أن مجلد static/ موجود في Git
+
+🎁 نصائح إضافية
+منع النوم - UptimeRobot
+سجل في uptimerobot.com (مجاني)
+أضف Monitor جديد:
+Type: HTTP(s)
+URL: رابط متجرك
+Interval: 5 minutes
+الآن لن ينام المتجر!
+مراقبة الأداء
+استخدم تبويب "Metrics" في Render لمراقبة:
+CPU Usage
+Memory Usage
+Request Response Time
+❓ حل المشاكل الشائعة
+المتجر لا يفتح (Error 503)
+راجع Logs - ابحث عن أخطاء
+تأكد من requirements.txt يحتوي جميع المكتبات
+تأكد من Start Command صحيح
+Database Connection Error
+تأكد من نسخ DATABASE_URL بشكل صحيح
+تأكد من Database في نفس منطقة Web Service
+Static Files لا تظهر
+تأكد من رفع مجلد static/ على Git
+تأكد من paths في الكود صحيحة
+🎉 النتيجة النهائية
+بعد إتمام جميع الخطوات:
+
+✅ رابط عام: https://your-store.onrender.com
+✅ SSL/HTTPS مجاني
+✅ يعمل 24/7
+✅ تحديثات تلقائية من GitHub
+✅ قاعدة بيانات PostgreSQL مجانية
+الآن يمكنك مشاركة الرابط مع العميل أو المدير! 🚀
+
+هل واجهت أي مشكلة في أي خطوة؟ أخبرني وسأساعدك! 😊

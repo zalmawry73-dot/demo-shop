@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة المخزون | منصة التاجر{% endblock %}
+
+{% block page_title %}إدارة المخزون{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Summary Cards -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0">إجمالي المنتجات</h6>
+                    <div class="icon-circle bg-primary bg-opacity-10 text-primary">
+                        <i class="fa-solid fa-box"></i>
+                    </div>
+                </div>
+                <h3 class="mb-0 fw-bold" id="totalVariants">-</h3>
+                <small class="text-success"><i class="fa-solid fa-arrow-up"></i> <span id="newProductsCount">0</span>
+                    منتج جديد</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0">قيمة المخزون</h6>
+                    <div class="icon-circle bg-success bg-opacity-10 text-success">
+                        <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
+                </div>
+                <h3 class="mb-0 fw-bold" id="totalValue">-</h3>
+                <small class="text-muted">سعر التكلفة</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0">منخفض المخزون</h6>
+                    <div class="icon-circle bg-warning bg-opacity-10 text-warning">
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <h3 class="mb-0 fw-bold" id="lowStockCount">-</h3>
+                <small class="text-danger">يتطلب إجراء</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0">حركات اليوم</h6>
+                    <div class="icon-circle bg-info bg-opacity-10 text-info">
+                        <i class="fa-solid fa-exchange-alt"></i>
+                    </div>
+                </div>
+                <h3 class="mb-0 fw-bold" id="movementsCount">-</h3>
+                <small class="text-muted">اضافة / صرف</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Inventory Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-primary">جرد المخزون</h5>
+        <div>
+            <button class="btn btn-outline-secondary btn-sm" id="exportBtn"><i class="fa-solid fa-file-export"></i>
+                تصدير</button>
+            <button class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#transferModal">
+                <i class="fa-solid fa-right-left"></i> نقل مخزون
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">المنتج</th>
+                        <th>SKU</th>
+                        <th>إجمالي الكمية</th>
+                        <th>توزيع المستودعات</th>
+                        <th>الحالة</th>
+                        <th class="text-end pe-4">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryList">
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Transfer Modal -->
+<div class="modal fade" id="transferModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">نقل مخزون داخلي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="transferForm">
+                    <div class="mb-3">
+                        <label class="form-label">المنتج</label>
+                        <select class="form-select" id="transferProduct" required>
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">من مستودع</label>
+                            <select class="form-select" id="fromWh" required>
+                                <!-- Populated dynamically via JS -->
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">إلى مستودع</label>
+                            <select class="form-select" id="toWh" required>
+                                <!-- Populated dynamically via JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الكمية</label>
+                        <input type="number" class="form-control" id="transferQty" min="1" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="confirmTransferBtn">تأكيد النقل</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // Global data for export
+    let inventoryData = [];
+    let warehouses = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadWarehouses();
+        await loadInventory();
+    });
+
+    async function loadWarehouses() {
+        try {
+            const response = await axios.get('/api/warehouses');
+            warehouses = response.data;
+
+            // Populate warehouse selects
+            const fromSelect = document.getElementById('fromWh');
+            const toSelect = document.getElementById('toWh');
+
+            fromSelect.innerHTML = '<option value="">اختر المستودع...</option>';
+            toSelect.innerHTML = '<option value="">اختر المستودع...</option>';
+
+            warehouses.forEach(wh => {
+                const option1 = document.createElement('option');
+                option1.value = wh.id;
+                option1.textContent = wh.name;
+                fromSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = wh.id;
+                option2.textContent = wh.name;
+                toSelect.appendChild(option2);
+            });
+        } catch (error) {
+            console.error('Failed to load warehouses:', error);
+            notifier.showToast('فشل تحميل المستودعات', 'error');
+        }
+    }
+
+
+    async function loadInventory() {
+        try {
+            const response = await axios.get('/api/inventory');
+            inventoryData = response.data; // Store for export
+
+            const tbody = document.getElementById('inventoryList');
+            const select = document.getElementById('transferProduct');
+
+            tbody.innerHTML = '';
+            select.innerHTML = '<option value="">اختر المنتج...</option>';
+
+            let totalStock = 0;
+            let lowStock = 0;
+
+            if (inventoryData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">لا يوجد مخزون مسجل</td></tr>';
+                return;
+            }
+
+            inventoryData.forEach(item => {
+                totalStock += item.total_stock;
+                if (item.total_stock < 10) lowStock++; // Example threshold
+
+                // Add to table
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-4 fw-medium">${item.product_name}</td>
+                    <td><span class="badge bg-light text-dark fw-normal font-monospace">${item.sku || '-'}</span></td>
+                    <td><strong>${item.total_stock}</strong></td>
+                    <td>
+                        <small class="d-flex flex-column gap-1">
+                            ${item.locations.map(l => `<span>${l.wh}: ${l.qty}</span>`).join('')}
+                        </small>
+                    </td>
+                    <td>
+                        ${item.total_stock > 0
+                        ? '<span class="badge bg-success bg-opacity-10 text-success">متوفر</span>'
+                        : '<span class="badge bg-danger bg-opacity-10 text-danger">نفذت الكمية</span>'}
+                    </td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-light border" onclick="openTransfer(${item.id})"><i class="fa-solid fa-right-left"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Add to select
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.product_name + (item.sku ? ` (${item.sku})` : '');
+                select.appendChild(option);
+            });
+
+            // Update Cards
+            document.getElementById('totalVariants').textContent = inventoryData.length;
+            document.getElementById('lowStockCount').textContent = lowStock;
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById('inventoryList').innerHTML = '<tr><td colspan="6" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+        }
+    }
+
+    // Transfer Logic
+    document.getElementById('confirmTransferBtn').addEventListener('click', async () => {
+        const product = document.getElementById('transferProduct').value;
+        const fromWh = document.getElementById('fromWh').value;
+        const toWh = document.getElementById('toWh').value;
+        const qty = document.getElementById('transferQty').value;
+
+        if (!product || !qty) return notifier.showToast('يرجى تعبئة الحقول', 'warning');
+
+        try {
+            await axios.post(`/api/move-stock?variant_id=${product}&from_wh=${fromWh}&to_wh=${toWh}&qty=${qty}`);
+            notifier.showToast('تم النقل بنجاح!', 'success');
+            location.reload();
+        } catch (e) {
+            notifier.showToast('فشل النقل: ' + (e.response?.data?.detail || e.message), 'error');
+        }
+    });
+
+    window.openTransfer = function (productId) {
+        document.getElementById('transferProduct').value = productId;
+        new bootstrap.Modal(document.getElementById('transferModal')).show();
+    }
+
+    // Export Logic
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        if (!inventoryData || inventoryData.length === 0) {
+            return notifier.showToast('لا توجد بيانات للتصدير', 'warning');
+        }
+
+        const headers = ['المعرف', 'اسم المنتج', 'SKU', 'الكمية الإجمالية', 'تفاصيل الموقع'];
+        const csvRows = [headers.join(',')];
+
+        inventoryData.forEach(item => {
+            const locations = item.locations.map(l => `${l.wh}: ${l.qty}`).join(' | ');
+            const row = [
+                item.id,
+                `"${item.product_name}"`, // Escape commas
+                `"${item.sku || ''}"`,
+                item.total_stock,
+                `"${locations}"`
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        const csvContent = "\uFEFF" + csvRows.join('\n'); // Add BOM for Excel Arabic support
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `inventory_export_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+</script>
+{% endblock %}

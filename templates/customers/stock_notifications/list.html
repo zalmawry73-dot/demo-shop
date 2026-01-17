@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}إشعارات المخزون | منصة التاجر{% endblock %}
+
+{% block page_title %}العملاء{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-1">إشعارات المخزون</h5>
+            <p class="text-muted small mb-0">إشعار العملاء عند توفر المنتجات مرة أخرى.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/customers/stock-notifications/settings" class="btn btn-dark">الإعدادات</a>
+            <button class="btn btn-outline-secondary">تصدير</button>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h6 class="card-title mb-4">التحليلات <small class="text-muted fw-normal">خلال الشهر الجاري</small></h6>
+        <div class="row text-center g-4">
+            <div class="col-md-4">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <i class="fa-solid fa-users text-muted fa-2x"></i>
+                    <div class="text-start">
+                        <small class="text-muted d-block">عدد الإشعارات المسجلة</small>
+                        <h4 class="mb-0 fw-bold" id="totalSubscribers">0 شخص</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 border-start border-end">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <i class="fa-regular fa-bell text-muted fa-2x"></i>
+                    <div class="text-start">
+                        <small class="text-muted d-block">إجمالي الإشعارات المرسلة</small>
+                        <h4 class="mb-0 fw-bold" id="alertsSent">0 تنبيه</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <i class="fa-solid fa-dollar-sign text-muted fa-2x"></i>
+                    <div class="text-start">
+                        <small class="text-muted d-block">المبيعات</small>
+                        <h4 class="mb-0 fw-bold">0 ريال</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <!-- Filters -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary active"
+                    onclick="filterPeriod('All', this)">الكل</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterPeriod('Today', this)">اليوم</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterPeriod('Yesterday', this)">الأمس</button>
+                <button type="button" class="btn btn-outline-secondary" onclick="filterPeriod('LastMonth', this)">الشهر
+                    الماضي</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterPeriod('CurrentMonth', this)">الشهر الجاري</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterPeriod('CurrentYear', this)">السنة الحالية</button>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i
+                            class="fa-solid fa-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="searchInput" placeholder="بحث"
+                        onkeyup="debounceSearch()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>المنتج</th>
+                        <th>الاسم<br><small class="text-muted fw-normal">البريد الإلكتروني</small></th>
+                        <th>رقم الهاتف</th>
+                        <th>تاريخ الاشتراك</th>
+                        <th>حالة الإشعار</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="notificationsTableBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+        <div id="loading" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div id="emptyState" class="text-center py-5" style="display: none;">
+            <p class="text-muted">لا توجد بيانات.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Send Modal -->
+<div class="modal fade" id="sendModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إرسال رسالة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="sendNotificationId">
+                <p class="text-muted mb-3"><small>الرسالة</small></p>
+                <p class="mb-3">مرحباً، المنتج متوفر الآن.</p>
+                <p class="text-muted small">يمكنك كتابة كود خصم لاستخدامه في هذه الرسالة.</p>
+            </div>
+            <div class="modal-footer justify-content-start">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary px-4" onclick="confirmSend()">إرسال</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentPeriod = 'All';
+    let searchTimeout;
+    const sendModal = new bootstrap.Modal(document.getElementById('sendModal'));
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStats();
+        loadNotifications();
+    });
+
+    async function loadStats() {
+        try {
+            const response = await fetch('/api/stock-notifications/stats');
+            const stats = await response.json();
+            document.getElementById('totalSubscribers').textContent = `${stats.total_subscribers} شخص`;
+            document.getElementById('alertsSent').textContent = `${stats.alerts_sent} تنبيه`;
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    function filterPeriod(period, btn) {
+        currentPeriod = period;
+
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active', 'btn-outline-primary'));
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.add('btn-outline-secondary'));
+
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-outline-primary', 'active');
+
+        loadNotifications();
+    }
+
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadNotifications();
+        }, 500);
+    }
+
+    async function loadNotifications() {
+        const query = document.getElementById('searchInput').value;
+        const tbody = document.getElementById('notificationsTableBody');
+        const loading = document.getElementById('loading');
+        const emptyState = document.getElementById('emptyState');
+
+        tbody.innerHTML = '';
+        loading.style.display = 'block';
+        emptyState.style.display = 'none';
+
+        try {
+            let url = `/api/stock-notifications?period=${currentPeriod}`;
+            if (query) {
+                url += `&search=${encodeURIComponent(query)}`;
+            }
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            loading.style.display = 'none';
+
+            if (data.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            data.forEach(n => {
+                const tr = document.createElement('tr');
+                let statusBadge = '';
+                if (n.status === 'Sent') statusBadge = '<span class="badge bg-success">تم الإرسال</span>';
+                else statusBadge = '<span class="badge bg-light text-dark border">جديد</span>';
+
+                tr.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                             <img src="${n.product_image || '/static/images/placeholder.png'}" width="40" height="40" class="rounded object-fit-cover">
+                             <span>${n.product_name}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-bold">${n.name || 'زائر'}</div>
+                        <div class="text-muted small">${n.email || '-'}</div>
+                    </td>
+                    <td dir="ltr" class="text-end">${n.phone || '-'}</td>
+                    <td>${new Date(n.created_at).toISOString().split('T')[0]}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                         <div class="d-flex gap-1 justify-content-end">
+                             ${n.email ? `<button class="btn btn-sm btn-light border rounded-circle" onclick="openSendModal('${n.id}', 'email')"><i class="fa-regular fa-envelope"></i></button>` : ''}
+                             ${n.phone ? `<button class="btn btn-sm btn-light border rounded-circle" onclick="openSendModal('${n.id}', 'sms')"><i class="fa-brands fa-whatsapp"></i></button>` : ''}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+            loading.style.display = 'none';
+        }
+    }
+
+    let currentSendId = null;
+    let currentChannel = null;
+
+    function openSendModal(id, channel) {
+        currentSendId = id;
+        currentChannel = channel;
+        sendModal.show();
+    }
+
+    async function confirmSend() {
+        if (!currentSendId) return;
+
+        try {
+            const response = await fetch(`/api/stock-notifications/${currentSendId}/send?channel=${currentChannel}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                sendModal.hide();
+                loadNotifications();
+                loadStats();
+            } else {
+                notifier.showToast('فشل الإرسال', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            notifier.showToast('حدث خطأ', 'error');
+        }
+    }
+</script>
+{% endblock %}

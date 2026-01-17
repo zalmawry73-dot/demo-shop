@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الحساب | منصة التاجر{% endblock %}
+
+{% block page_title %}إعدادات الحساب{% endblock %}
+
+{% block styles %}
+<style>
+    .settings-form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+
+    .form-control,
+    .form-select {
+        padding: 0.6rem 1rem;
+        border-color: #e5e7eb;
+        border-radius: 0.5rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #818cf8;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .card-title {
+        color: #111827;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/settings" class="btn btn-light rounded-circle shadow-sm"
+                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">إعدادات الحساب</h4>
+        </div>
+
+        <button type="submit" form="profileForm" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm"
+            style="background-color: #4f46e5; border: none;">
+            حفظ التغييرات
+        </button>
+    </div>
+</div>
+
+<div class="row g-4" dir="rtl">
+    <!-- Profile Info -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="card-title">بيانات الحساب</h5>
+            <form id="profileForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="settings-form-label">الاسم</label>
+                        <input type="text" class="form-control" name="full_name" value="{{ user.full_name or '' }}"
+                            placeholder="أدخل اسمك الكامل">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="settings-form-label">رقم الجوال</label>
+                        <input type="tel" class="form-control text-start" name="phone_number"
+                            value="{{ user.phone_number or '' }}" dir="ltr" placeholder="9665xxxxxxxx">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="settings-form-label">تاريخ الميلاد</label>
+                        <input type="date" class="form-control" name="date_of_birth" value="{{ user.date_of_birth }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="settings-form-label">البريد الإلكتروني</label>
+                        <input type="email" class="form-control text-muted" value="{{ user.email }}" disabled
+                            style="background-color: #f9fafb;">
+                    </div>
+                    <div class="col-12">
+                        <label class="settings-form-label d-block mb-2">الجنس</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male"
+                                    {% if user.gender and user.gender.value=='male' %}checked{% endif %}>
+                                <label class="form-check-label" for="genderMale">ذكر</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="gender" id="genderFemale"
+                                    value="female" {% if user.gender and user.gender.value=='female' %}checked{% endif
+                                    %}>
+                                <label class="form-check-label" for="genderFemale">أنثى</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 pt-3 border-top">
+                        <label class="settings-form-label">هل تعمل في نفس المؤسسة التابعة للمتجر؟</label>
+                        <div class="d-flex gap-4 mt-1">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="same_org" id="orgYes" checked>
+                                <label class="form-check-label" for="orgYes">نعم</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="same_org" id="orgNo">
+                                <label class="form-check-label" for="orgNo">لا</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Password Change -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mt-4">
+            <h5 class="card-title">كلمة المرور</h5>
+            <form id="passwordForm">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="settings-form-label">أدخل كلمة المرور الحالية</label>
+                        <input type="password" class="form-control" name="current_password"
+                            placeholder="أدخل كلمة المرور الخاصة بك">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="settings-form-label">أدخل كلمة المرور الجديدة</label>
+                        <input type="password" class="form-control" name="new_password"
+                            placeholder="أدخل كلمة المرور الجديدة">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="settings-form-label">تأكيد كلمة المرور الجديدة</label>
+                        <input type="password" class="form-control" name="confirm_password"
+                            placeholder="أدخل كلمة المرور الخاصة بك">
+                    </div>
+                    <div class="col-12 text-end mt-3">
+                        <button type="submit" class="btn btn-light border" style="color: #4b5563;">تغيير كلمة
+                            المرور</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Zid Pay Section (Optional/Visual) -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mt-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-1">تغيير رمز الدخول لزد كاشير</h5>
+                    <p class="text-muted small mb-0">رمز الدخول الخاص بزد كاشير</p>
+                </div>
+                <button class="btn btn-light border py-2 px-3">إنشاء رمز دخول عشوائي</button>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 p-4 mt-4 bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold mb-1">العودة إلى لوحة التحكم القديمة</h6>
+                    <p class="text-muted small mb-0">يمكنك الرجوع إلى لوحة التحكم القديمة في أي وقت</p>
+                </div>
+                <button class="btn btn-dark" style="background-color: #4a1d96;">الرجوع الآن</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation (Optional Visual) -->
+    <div class="col-lg-4 d-none d-lg-block">
+        <div class="ps-3">
+            <div class="list-group border-0 bg-transparent">
+                <a href="#"
+                    class="list-group-item list-group-item-action border-0 bg-transparent fw-bold text-primary">الإعدادات</a>
+                <div class="ms-3 mt-2 border-start ps-3" style="border-color: #e5e7eb !important;">
+                    <a href="#" class="d-block text-decoration-none text-dark mb-2 fw-medium">بيانات الحساب</a>
+                    <a href="#" class="d-block text-decoration-none text-secondary mb-2 small">كلمة المرور</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Handle Profile Save
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        // Remove empty strings to allow NULL updates if backend handles it, or keep empty strings
+        // Based on schema, fields are Optional.
+
+        try {
+            const response = await fetch('/account/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                notifier.showFlashToast('تم حفظ البيانات بنجاح', 'success');
+                window.location.reload();
+            } else {
+                notifier.showToast('حدث خطأ أثناء الحفظ', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            notifier.showToast('خطأ في الاتصال', 'error');
+        }
+    });
+
+    // Handle Password Change
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/account/password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                notifier.showToast('تم تغيير كلمة المرور بنجاح', 'success');
+                e.target.reset();
+            } else {
+                const err = await response.json();
+                notifier.showToast('خطأ: ' + (err.detail || 'تعذر تغيير كلمة المرور'), 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            notifier.showToast('خطأ في الاتصال', 'error');
+        }
+    });
+</script>
+{% endblock %}

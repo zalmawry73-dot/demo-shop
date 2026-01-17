@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الفواتير | منصة التاجر{% endblock %}
+
+{% block page_title %}إعدادات الفواتير{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/settings" class="btn btn-light rounded-circle shadow-sm"
+                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">إعدادات الفواتير</h4>
+        </div>
+        <button class="btn btn-primary px-4" onclick="saveSettings()" id="saveBtn">حفظ</button>
+    </div>
+</div>
+
+<div class="row g-4" dir="rtl">
+    <!-- General Invoice Settings -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="fw-bold mb-4">إعدادات الفواتير</h5>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">إنشاء الفواتير عبر زد</h6>
+                    <p class="text-muted small mb-0">في حال التعطيل، سيتوقف زد عن إنشاء الفواتير. لا يزال بإمكانك إرسال
+                        ملخصات الطلبات للعملاء.</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_create_invoice_automatically">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">أرغب كتاجر تلقي رسائل بريد إلكتروني تحتوي على فواتير الطلبات لمتجرك؟</h6>
+                    <p class="text-muted small mb-0">في حال تعطيل الاختيار، سيتم إيقاف إرسال رسائل البريد الإلكتروني من
+                        نظام زد إلى بريدك</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_email_invoice_to_admin">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold mb-1">أرغب من نظام زد إرسال فواتير الطلبات لعملائي</h6>
+                    <p class="text-muted small mb-0">في حال تعطيل الاختيار، سيقوم نظام زد بإرسال ملخص الطلب فقط إلى
+                        البريد الإلكتروني للعميل</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_email_invoice_to_customer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Template & Preview -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="fw-bold mb-4">نموذج الفاتورة و ملخص الطلب</h5>
+
+            <div class="row">
+                <!-- Controls (Left on LTR, Right on RTL) -->
+                <div class="col-md-4 order-md-2 mb-4 mb-md-0">
+                    <div class="d-flex flex-column gap-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_qr_code">رمز QR</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_qr_code" role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_barcode">الباركود</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_barcode" role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_order_status">حالة الطلب</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_order_status"
+                                    role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label class="form-check-label fw-bold" for="switch_show_expected_delivery">الوقت
+                                    المتوقع للتوصيل</label>
+                                <p class="text-muted small mb-0" style="font-size: 0.75rem;">الطلب</p>
+                            </div>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_expected_delivery"
+                                    role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_sku">رمز المنتج (SKU)</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_sku" role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_product_image">صور المنتج</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_product_image"
+                                    role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_weight">أوزان المنتج</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_weight" role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_discount_code">كود خصم</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_discount_code"
+                                    role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_tax_number">الرقم الضريبي</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_tax_number"
+                                    role="switch">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold" for="switch_show_product_description">وصف
+                                المنتج</label>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" type="checkbox" id="switch_show_product_description"
+                                    role="switch">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="col-md-8 order-md-1">
+                    <div class="border rounded p-4 bg-white"
+                        style="min-height: 600px; font-family: 'Courier New', Courier, monospace;">
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="text-center">
+                                <div class="border border-success text-success fw-bold px-2 py-1 rotate-n15 mb-2 rounded"
+                                    style="transform: rotate(-10deg); width: fit-content;">PAID</div>
+                                <!-- QR Code -->
+                                <div id="preview-qr" class="mb-2">
+                                    <i class="fa-solid fa-qrcode fa-4x"></i>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="mb-2 text-primary">
+                                    <i class="fa-solid fa-infinity fa-3x"></i>
+                                </div>
+                                <h6 class="fw-bold">Demo Store</h6>
+                            </div>
+                            <div class="text-center">
+                                <h6 class="mb-2">فاتورة ضريبية مبسطة</h6>
+                                <!-- Barcode -->
+                                <div id="preview-barcode">
+                                    <i class="fa-solid fa-barcode fa-4x"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Info -->
+                        <div class="row mb-4 small">
+                            <div class="col-6">
+                                <div class="mb-1">رقم الفاتورة: #50</div>
+                                <div class="mb-1">تاريخ الطلب: 2026-01-12 03:00 ص</div>
+                                <div id="preview-order-status" class="mb-1">حالة الطلب: جديد</div>
+                                <div id="preview-expected-delivery" class="mb-1 text-muted">الوقت المتوقع: يومين</div>
+                                <div class="mb-1">اسم العميل: محمد بن عبدالرحمن</div>
+                                <div class="mb-1">رقم الهاتف: +96650000000</div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div class="mb-1">طريقة الشحن: مندوب</div>
+                                <div class="mb-1">رقم التتبع: 123456789</div>
+                                <div class="mb-1">عنوان الشحن: السعودية, الرياض</div>
+                                <div class="mb-1">طريقة الدفع: تحويل بنكي</div>
+                                <div id="preview-tax-number" class="mb-1">الرقم الضريبي: 345345345</div>
+                            </div>
+                        </div>
+
+                        <!-- Products Table -->
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered table-sm small text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>المنتج</th>
+                                        <th class="preview-sku">SKU</th>
+                                        <th class="preview-image">الصورة</th>
+                                        <th class="preview-desc">الوصف</th>
+                                        <th class="preview-weight">الوزن</th>
+                                        <th>الكمية</th>
+                                        <th>السعر</th>
+                                        <th>الإجمالي</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>منتج تجريبي 1</td>
+                                        <td class="preview-sku">Z.124.55</td>
+                                        <td class="preview-image"><i class="fa-solid fa-image text-muted"></i></td>
+                                        <td class="preview-desc">وصف للمنتج 1</td>
+                                        <td class="preview-weight">24.98 kg</td>
+                                        <td>1</td>
+                                        <td>434.78</td>
+                                        <td>500.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>منتج تجريبي 2</td>
+                                        <td class="preview-sku">Z.125.66</td>
+                                        <td class="preview-image"><i class="fa-solid fa-image text-muted"></i></td>
+                                        <td class="preview-desc">وصف للمنتج 2</td>
+                                        <td class="preview-weight">-</td>
+                                        <td>1</td>
+                                        <td>434.78</td>
+                                        <td>500.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Totals -->
+                        <div class="row">
+                            <div class="col-6">
+                                <div id="preview-discount-code" class="mb-2">
+                                    <strong>كود خصم:</strong> ZID10
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>المجموع غير شامل الضريبة</span>
+                                    <span>SAR 868.14</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1 text-danger">
+                                    <span>خصم</span>
+                                    <span>- SAR 50.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>التوصيل</span>
+                                    <span>SAR 45.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>ضريبة القيمة المضافة (15%)</span>
+                                    <span>SAR 130.22</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>المجموع الكلي</span>
+                                    <span>SAR 995.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSettings();
+        setupPreviewListeners();
+    });
+
+    const configKeys = [
+        'create_invoice_automatically', 'email_invoice_to_admin', 'email_invoice_to_customer',
+        'show_qr_code', 'show_barcode', 'show_order_status', 'show_expected_delivery',
+        'show_sku', 'show_product_image', 'show_weight', 'show_discount_code',
+        'show_tax_number', 'show_product_description'
+    ];
+
+    function setupPreviewListeners() {
+        // Map switch IDs to Preview Selector(s)
+        const map = {
+            'show_qr_code': '#preview-qr',
+            'show_barcode': '#preview-barcode',
+            'show_order_status': '#preview-order-status',
+            'show_expected_delivery': '#preview-expected-delivery',
+            'show_sku': '.preview-sku',
+            'show_product_image': '.preview-image',
+            'show_weight': '.preview-weight',
+            'show_discount_code': '#preview-discount-code',
+            'show_tax_number': '#preview-tax-number',
+            'show_product_description': '.preview-desc'
+        };
+
+        for (const [key, selector] of Object.entries(map)) {
+            const switchEl = document.getElementById(`switch_${key}`);
+            if (switchEl) {
+                switchEl.addEventListener('change', (e) => {
+                    const els = document.querySelectorAll(selector);
+                    els.forEach(el => {
+                        el.style.display = e.target.checked ? '' : 'none';
+                    });
+                });
+            }
+        }
+    }
+
+    async function loadSettings() {
+        try {
+            const res = await fetch('/api/settings/invoice');
+            const config = await res.json();
+
+            configKeys.forEach(key => {
+                const el = document.getElementById(`switch_${key}`);
+                if (el) {
+                    el.checked = config[key];
+                    // Trigger manual change event to update preview
+                    el.dispatchEvent(new Event('change'));
+                }
+            });
+
+        } catch (e) {
+            console.error(e);
+            notifier.showToast('فشل تحميل الإعدادات', 'error');
+        }
+    }
+
+    async function saveSettings() {
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.textContent = 'جاري الحفظ...';
+
+        const data = {};
+        configKeys.forEach(key => {
+            const el = document.getElementById(`switch_${key}`);
+            if (el) data[key] = el.checked;
+        });
+
+        try {
+            const res = await fetch('/api/settings/invoice', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                notifier.showFlashToast('تم حفظ إعدادات الفواتير', 'success');
+                window.location.reload();
+            } else {
+                notifier.showToast('حدث خطأ أثناء الحفظ', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            notifier.showToast('تعذر الاتصال بالخادم', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'حفظ';
+        }
+    }
+</script>
+{% endblock %}

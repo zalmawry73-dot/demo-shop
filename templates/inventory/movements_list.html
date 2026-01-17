@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}سجل حركات المخزون | منصة التاجر{% endblock %}
+{% block page_title %}سجل حركات المخزون{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h1>سجل حركات المخزون</h1>
+        <p style="color:#64748b; margin-top:5px">تتبع جميع عمليات الإضافة، الخصم، والنقل في المخزون</p>
+    </div>
+    <div class="actions">
+        <button class="action-btn secondary" onclick="window.location.reload()">
+            <i class="fa-solid fa-rotate"></i> تحديث
+        </button>
+    </div>
+</div>
+
+<div class="filters-bar">
+    <div class="filter-group">
+        <label>بحث</label>
+        <input type="text" id="searchInput" class="input-style" placeholder="اسم المنتج، SKU...">
+    </div>
+    <div class="filter-group">
+        <label>نوع الحركة</label>
+        <select id="reasonFilter" class="input-style" onchange="MovementsManager.loadData()">
+            <option value="">الكل</option>
+            <option value="new_order">طلب جديد</option>
+            <option value="manual_edit">تعديل يدوي</option>
+            <option value="transfer">نقل مخزني</option>
+            <option value="stock_take">جرد مخزني</option>
+        </select>
+    </div>
+</div>
+
+<div class="card table-card">
+    <div class="table-responsive">
+        <table id="movementsTable">
+            <thead>
+                <tr>
+                    <th>تاريخ الحركة</th>
+                    <th>المنتج</th>
+                    <th>المستودع</th>
+                    <th>نوع الحركة</th>
+                    <th>الكمية</th>
+                    <th>المستخدم</th>
+                </tr>
+            </thead>
+            <tbody id="movementsTableBody">
+                <!-- Data -->
+            </tbody>
+        </table>
+    </div>
+    <div id="loadingState" style="text-align:center; padding: 40px; display:none;">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="{{ url_for('static', path='js/movements.js') }}?v=2"></script>
+{% endblock %}

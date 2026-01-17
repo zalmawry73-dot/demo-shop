@@ -1,0 +1,161 @@
+<!-- Add Condition Modal -->
+<div class="modal fade" id="addConditionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة شرط جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-4">
+                <div class="mb-4">
+                    <label class="form-label fw-bold mb-3">اختر نوع الشرط</label>
+                    <div class="row g-3" id="conditionTypeGrid">
+                        <!-- Card 1: Cart Total -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="CART_TOTAL" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-coins fa-2x text-primary mb-2"></i>
+                                    <div class="small fw-bold">قيمة السلة</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 2: Cart Quantity -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="CART_QUANTITY" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-shopping-basket fa-2x text-info mb-2"></i>
+                                    <div class="small fw-bold">عدد المنتجات</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 3: Cart Weight -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="CART_WEIGHT" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-weight-hanging fa-2x text-warning mb-2"></i>
+                                    <div class="small fw-bold">الوزن</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 4: Products -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="PRODUCTS" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-box-open fa-2x text-success mb-2"></i>
+                                    <div class="small fw-bold">منتجات محددة</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 5: Categories -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="PRODUCT_CATEGORY" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-tags fa-2x text-danger mb-2"></i>
+                                    <div class="small fw-bold">تصنيفات</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 6: Customer Groups -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="CUSTOMER_GROUPS" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-users fa-2x text-secondary mb-2"></i>
+                                    <div class="small fw-bold">مجموعات العملاء</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 7: Order Time -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="ORDER_TIME" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                                    <div class="small fw-bold">توقيت الطلب</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 8: Sales Channel -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="SALES_CHANNEL" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-store-alt fa-2x text-dark mb-2"></i>
+                                    <div class="small fw-bold">قناة البيع</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 9: Product Type -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="PRODUCT_TYPE" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-cube fa-2x text-primary mb-2"></i>
+                                    <div class="small fw-bold">نوع المنتج</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 10: Coupons -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="COUPONS" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-ticket-alt fa-2x text-warning mb-2"></i>
+                                    <div class="small fw-bold">قسائم التخفيض</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 11: Customer Location -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="CUSTOMER_LOCATION" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-map-marker-alt fa-2x text-danger mb-2"></i>
+                                    <div class="small fw-bold">موقع العميل</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 12: Customer Order Count -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="CUSTOMER_ORDER_COUNT" class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-clipboard-list fa-2x text-info mb-2"></i>
+                                    <div class="small fw-bold">عدد طلبات العميل</div>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Card 13: Customer Cancelled Order Count -->
+                        <div class="col-6 col-md-4">
+                            <label class="card h-100 border-2 cursor-pointer condition-card-label">
+                                <input type="radio" name="conditionType" value="CUSTOMER_CANCELLED_ORDER_COUNT"
+                                    class="d-none">
+                                <div class="card-body text-center p-3">
+                                    <i class="fas fa-ban fa-2x text-secondary mb-2"></i>
+                                    <div class="small fw-bold">عدد الطلبات الملغاة</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden Input to store selected type -->
+                <input type="hidden" id="conditionTypeSelect">
+
+                <!-- Dynamic Condition Inputs Container -->
+                <div id="conditionInputsContainer">
+                    <!-- Inputs injected via JS based on type -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="confirmAddCondition">إضافة</button>
+            </div>
+        </div>
+    </div>
+</div>

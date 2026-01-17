@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}مجموعات العملاء | منصة التاجر{% endblock %}
+
+{% block page_title %}مجموعات العملاء{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-1">مجموعات العملاء</h5>
+            <p class="text-muted small mb-0">عملاؤك ضمن مجموعات لسهولة المتابعة والإدارة</p>
+        </div>
+        <a href="/customers/groups/create" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> إنشاء
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if groups %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>عدد العملاء</th>
+                        <th>تاريخ الإنشاء</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ group.name }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark">{{ group.customer_count }} عميل</span>
+                        </td>
+                        <td>{{ group.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteGroup('{{ group.id }}')"><i
+                                    class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <i class="fa-solid fa-users-rays fa-4x text-light"></i> <!-- Placeholder Icon -->
+            </div>
+            <h5>اجمع عملاءك وخصص رسائلك لتتناسب مع احتياجاتهم</h5>
+            <p class="text-muted">قسم حسب بيانات العملاء بنقرة واحدة وعزز التفاعل بعروض مخصصة.</p>
+            <a href="/customers/groups/create" class="btn btn-primary">ابدأ الآن</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function deleteGroup(groupId) {
+        if (await notifier.showConfirm('هل أنت متأكد من حذف هذه المجموعة؟')) {
+            try {
+                const response = await fetch(`/api/customers/groups/${groupId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    notifier.showFlashToast('تم حذف المجموعة بنجاح', 'success');
+                    window.location.reload();
+                } else {
+                    notifier.showToast('حدث خطأ أثناء الحذف', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                notifier.showToast('حدث خطأ أثناء الحذف', 'error');
+            }
+        }
+    }
+</script>
+{% endblock %}

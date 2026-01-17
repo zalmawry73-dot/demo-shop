@@ -1,0 +1,1 @@
+DEBUG UPDATE: name='Updated Constraint Name' is_active=None shipping_company_ids=['dhl'] custom_error_message=None is_custom_error_enabled=None conditions=[ShippingConstraintConditionCreate(type='CART_QUANTITY', operator=None, value={'min': 5}), ShippingConstraintConditionCreate(type='PRODUCTS', operator=None, value={'product_ids': [1, 2, 3]})]

@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}لغات وعملات المتجر | منصة التاجر{% endblock %}
+
+{% block page_title %}لغات وعملات المتجر{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/settings" class="btn btn-light rounded-circle shadow-sm"
+                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">لغات وعملات المتجر</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4" dir="rtl">
+    <!-- Languages Section -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="card-title fw-bold mb-1">اللغات</h5>
+                    <p class="text-muted small mb-0">اختر اللغات التي يمكن للعملاء استخدامها في متجرك</p>
+                </div>
+                <button class="btn btn-primary" onclick="openLanguageModal()">
+                    <i class="fas fa-plus me-2"></i> إضافة لغة
+                </button>
+            </div>
+
+            <div class="row g-3" id="languagesContainer">
+                <!-- Languages will be loaded here -->
+            </div>
+
+            <div
+                class="alert alert-info mt-4 d-flex align-items-center gap-2 border-0 bg-info-subtle text-info-emphasis rounded-3">
+                <i class="fas fa-info-circle"></i>
+                <small>سيتم تحويل المبيعات للعملة الجديدة حسب سعر الصرف الحالي، وقد يتغير إجمالي المبيعات بناءً على
+                    ذلك</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Currencies Section -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="card-title fw-bold mb-1">العملات</h5>
+                </div>
+                <div class="input-group w-auto">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" placeholder="بحث" id="currencySearch">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-0">الدولة</th>
+                            <th class="border-0">العملة</th>
+                            <th class="border-0">سعر الصرف</th>
+                            <th class="border-0">مفعل</th>
+                            <th class="border-0">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currenciesTableBody">
+                        <!-- Currencies will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3 text-end">
+                <button class="btn btn-primary" onclick="openCurrencyModal()">
+                    <i class="fas fa-plus me-2"></i> إضافة عملة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Language Modal -->
+<div class="modal fade" id="languageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="langModalTitle">إضافة لغة</h5>
+                <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="languageForm">
+                    <input type="hidden" id="langId">
+                    <div class="mb-3">
+                        <label class="form-label">اسم اللغة</label>
+                        <input type="text" class="form-control" id="langName" required placeholder="مثال: العربية">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">رمز اللغة</label>
+                        <input type="text" class="form-control" id="langCode" required placeholder="مثال: ar">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">رمز العلم (اختياري)</label>
+                        <input type="text" class="form-control" id="langFlag" placeholder="مثال: sa">
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="langActive" checked>
+                        <label class="form-check-label">مفعل</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" onclick="saveLanguage()">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Currency Modal -->
+<div class="modal fade" id="currencyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="currModalTitle">إضافة عملة</h5>
+                <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="currencyForm">
+                    <input type="hidden" id="currId">
+                    <div class="mb-3">
+                        <label class="form-label">اسم العملة</label>
+                        <input type="text" class="form-control" id="currName" required placeholder="مثال: ريال سعودي">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">رمز العملة (Code)</label>
+                        <input type="text" class="form-control" id="currCode" required placeholder="مثال: SAR">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الرمز (Symbol)</label>
+                        <input type="text" class="form-control" id="currSymbol" required placeholder="مثال: ر.س">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">سعر الصرف (مقارنة بالعملة الافتراضية)</label>
+                        <input type="number" step="0.0001" class="form-control" id="currRate" value="1.0">
+                        <div class="form-text">العملة الافتراضية سعر صرفها دائماً 1.0</div>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="currActive" checked>
+                        <label class="form-check-label">مفعل</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" onclick="saveCurrency()">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let languages = [];
+    let currencies = [];
+    let languageModal, currencyModal;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        languageModal = new bootstrap.Modal(document.getElementById('languageModal'));
+        currencyModal = new bootstrap.Modal(document.getElementById('currencyModal'));
+        loadLanguages();
+        loadCurrencies();
+    });
+
+    async function loadLanguages() {
+        const res = await fetch('/api/settings/languages');
+        languages = await res.json();
+        renderLanguages();
+    }
+
+    async function loadCurrencies() {
+        const res = await fetch('/api/settings/currencies');
+        currencies = await res.json();
+        renderCurrencies();
+    }
+
+    function renderLanguages() {
+        const container = document.getElementById('languagesContainer');
+        container.innerHTML = languages.map(lang => `
+            <div class="col-md-6">
+                <div class="border rounded-3 p-3 d-flex align-items-center justify-content-between bg-white">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" ${lang.is_active ? 'checked' : ''} 
+                                onchange="toggleLanguage(${lang.id}, this.checked)">
+                        </div>
+                        <div>
+                            <div class="fw-bold">${lang.name}</div>
+                            <div class="text-muted small">${lang.code.toUpperCase()}</div>
+                        </div>
+                    </div>
+                    <div>
+                        ${lang.is_default
+                ? '<span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">اللغة الافتراضية</span>'
+                : `<button class="btn btn-sm btn-outline-dark rounded-pill px-3" onclick="setDefaultLanguage(${lang.id})">تعيين كافتراضي</button>`
+            }
+                        <button class="btn btn-sm btn-link text-muted" onclick="editLanguage(${lang.id})"><i class="fas fa-edit"></i></button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderCurrencies() {
+        const tbody = document.getElementById('currenciesTableBody');
+        tbody.innerHTML = currencies.map(curr => `
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Placeholder flag if needed, using text for now or icon -->
+                        <i class="fas fa-money-bill text-muted"></i>
+                        <span>${curr.name}</span>
+                    </div>
+                </td>
+                <td>${curr.code}</td>
+                <td>${curr.exchange_rate}</td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" ${curr.is_active ? 'checked' : ''}
+                            onchange="toggleCurrency(${curr.id}, this.checked)">
+                    </div>
+                </td>
+                <td>
+                     ${curr.is_default
+                ? '<span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">العملة الافتراضية</span>'
+                : `<div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-dark rounded-pill" onclick="setDefaultCurrency(${curr.id})">تعيين كافتراضي</button>
+                                <button class="btn btn-sm btn-light text-muted" onclick="editCurrency(${curr.id})"><i class="fas fa-edit"></i></button>
+                           </div>`
+            }
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // --- Language Actions ---
+    function openLanguageModal() {
+        document.getElementById('languageForm').reset();
+        document.getElementById('langId').value = '';
+        document.getElementById('langModalTitle').innerText = 'إضافة لغة';
+        languageModal.show();
+    }
+
+    function editLanguage(id) {
+        const lang = languages.find(l => l.id === id);
+        if (!lang) return;
+        document.getElementById('langId').value = lang.id;
+        document.getElementById('langName').value = lang.name;
+        document.getElementById('langCode').value = lang.code;
+        document.getElementById('langFlag').value = lang.flag_code || '';
+        document.getElementById('langActive').checked = lang.is_active;
+        document.getElementById('langModalTitle').innerText = 'تعديل اللغة';
+        languageModal.show();
+    }
+
+    async function saveLanguage() {
+        const id = document.getElementById('langId').value;
+        const data = {
+            name: document.getElementById('langName').value,
+            code: document.getElementById('langCode').value,
+            flag_code: document.getElementById('langFlag').value,
+            is_active: document.getElementById('langActive').checked
+        };
+
+        try {
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/settings/languages/${id}` : '/api/settings/languages';
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                languageModal.hide();
+                loadLanguages();
+                notifier.showToast('تم حفظ اللغة بنجاح', 'success');
+            } else {
+                const err = await res.json();
+                notifier.showToast(err.detail, 'error');
+            }
+        } catch (e) { console.error(e); notifier.showToast('Error saving language', 'error'); }
+    }
+
+    async function setDefaultLanguage(id) {
+        if (!await notifier.showConfirm('هل أنت متأكد من تغيير اللغة الافتراضية؟')) return;
+        try {
+            const res = await fetch(`/api/settings/languages/${id}/default`, { method: 'PUT' });
+            if (res.ok) {
+                loadLanguages();
+                notifier.showToast('تم تعيين اللغة الافتراضية', 'success');
+            }
+        } catch (e) { notifier.showToast('Error setting default language', 'error'); }
+    }
+
+    async function toggleLanguage(id, active) {
+        try {
+            await fetch(`/api/settings/languages/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_active: active })
+            });
+            loadLanguages(); // Reload to ensure UI consistency
+            notifier.showToast('تم تحديث حالة اللغة', 'success');
+        } catch (e) { notifier.showToast('Error updating language', 'error'); loadLanguages(); }
+    }
+
+    // --- Currency Actions ---
+    function openCurrencyModal() {
+        document.getElementById('currencyForm').reset();
+        document.getElementById('currId').value = '';
+        document.getElementById('currModalTitle').innerText = 'إضافة عملة';
+        currencyModal.show();
+    }
+
+    function editCurrency(id) {
+        const curr = currencies.find(c => c.id === id);
+        if (!curr) return;
+        document.getElementById('currId').value = curr.id;
+        document.getElementById('currName').value = curr.name;
+        document.getElementById('currCode').value = curr.code;
+        document.getElementById('currSymbol').value = curr.symbol;
+        document.getElementById('currRate').value = curr.exchange_rate;
+        document.getElementById('currActive').checked = curr.is_active;
+        document.getElementById('currModalTitle').innerText = 'تعديل العملة';
+        currencyModal.show();
+    }
+
+    async function saveCurrency() {
+        const id = document.getElementById('currId').value;
+        const data = {
+            name: document.getElementById('currName').value,
+            code: document.getElementById('currCode').value,
+            symbol: document.getElementById('currSymbol').value,
+            exchange_rate: document.getElementById('currRate').value,
+            is_active: document.getElementById('currActive').checked
+        };
+
+        try {
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/settings/currencies/${id}` : '/api/settings/currencies';
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                currencyModal.hide();
+                loadCurrencies();
+                notifier.showToast('تم حفظ العملة بنجاح', 'success');
+            } else {
+                const err = await res.json();
+                notifier.showToast(err.detail, 'error');
+            }
+        } catch (e) { console.error(e); notifier.showToast('Error saving currency', 'error'); }
+    }
+
+    async function setDefaultCurrency(id) {
+        if (!await notifier.showConfirm('هل أنت متأكد من تغيير العملة الافتراضية؟')) return;
+        try {
+            const res = await fetch(`/api/settings/currencies/${id}/default`, { method: 'PUT' });
+            if (res.ok) {
+                loadCurrencies();
+                notifier.showToast('تم تعيين العملة الافتراضية', 'success');
+            }
+        } catch (e) { notifier.showToast('Error setting default currency', 'error'); }
+    }
+
+    async function toggleCurrency(id, active) {
+        try {
+            await fetch(`/api/settings/currencies/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_active: active })
+            });
+            loadCurrencies();
+            notifier.showToast('تم تحديث حالة العملة', 'success');
+        } catch (e) { notifier.showToast('Error updating currency', 'error'); loadCurrencies(); }
+    }
+</script>
+{% endblock %}

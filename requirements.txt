@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+sqlalchemy
+aiosqlite
+asyncpg
+jinja2
+python-multipart
+python-jose[cryptography]
+passlib[argon2]
+httpx
+pytest
+pandas
+openpyxl
+email-validator
+xlsxwriter

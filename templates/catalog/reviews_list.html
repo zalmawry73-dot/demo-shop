@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}تقييمات المنتجات | منصة التاجر{% endblock %}
+
+{% block page_title %}تقييمات المنتجات{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h1>تقييمات العملاء</h1>
+        <p style="color:#64748b; margin-top:5px">مراجعة وإدارة تعليقات وتقييمات العملاء</p>
+    </div>
+</div>
+
+<div class="filters-bar">
+    <div class="filter-group">
+        <label>بحث</label>
+        <input type="text" id="searchInput" class="input-style" placeholder="اسم المنتج أو العميل...">
+    </div>
+    <div class="filter-group">
+        <label>الحالة</label>
+        <select id="statusFilter" class="input-style" onchange="ReviewsManager.loadReviews()">
+            <option value="">الكل</option>
+            <option value="Pending">بانتظار الموافقة</option>
+            <option value="Approved">مقبولة</option>
+            <option value="Rejected">مرفوضة</option>
+        </select>
+    </div>
+</div>
+
+<div class="card table-card">
+    <div class="table-responsive">
+        <table id="reviewsTable">
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>العميل</th>
+                    <th>التقييم</th>
+                    <th>التعليق</th>
+                    <th>الحالة</th>
+                    <th>التاريخ</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="reviewsTableBody">
+                <!-- Data Injected Here -->
+            </tbody>
+        </table>
+    </div>
+    <div id="loadingState" style="text-align:center; padding: 40px; display:none;">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+    </div>
+    <div id="emptyState" style="text-align:center; padding: 40px; display:none;">
+        <i class="fa-solid fa-star-half-stroke fa-3x text-muted mb-3"></i>
+        <h3>لا توجد تقييمات</h3>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ url_for('static', path='js/reviews.js') }}?v=2"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        ReviewsManager.init();
+    });
+</script>
+{% endblock %}

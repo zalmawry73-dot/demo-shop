@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}تقييمات المنتجات | منصة التاجر{% endblock %}
+
+{% block page_title %}التقييمات{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-1">التقييمات</h5>
+            <p class="text-muted small mb-0">تتيح هذه الميزة لعملائك تقييم تجربتهم مع منتجاتك ومشاركتها مع العملاء
+                الآخرين.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/customers/reviews/settings" class="btn btn-dark">
+                <i class="fa-solid fa-cog"></i> إعدادات الإشعارات
+            </a>
+            <button class="btn btn-outline-secondary"> نشر الكل</button>
+            <button class="btn btn-outline-secondary"><i class="fa-solid fa-ellipsis-v"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <!-- Filters -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary active"
+                    onclick="filterReviews('All', this)">الكل</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterReviews('Published', this)">منشور</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterReviews('Hidden', this)">مخفي</button>
+                <button type="button" class="btn btn-outline-secondary"
+                    onclick="filterReviews('Modified', this)">معدل</button>
+            </div>
+        </div>
+
+        <!-- Search and Sort -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i
+                            class="fa-solid fa-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="searchInput" placeholder="بحث"
+                        onkeyup="debounceSearch()">
+                </div>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end gap-2">
+                <button class="btn btn-outline-secondary"><i class="fa-solid fa-filter"></i></button>
+                <button class="btn btn-outline-secondary"><i class="fa-solid fa-sort"></i></button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">تعليق</th>
+                        <th>اسم العميل</th>
+                        <th>المنتج</th>
+                        <th>التقييم</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإنشاء</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="reviewsTableBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+        <div id="loading" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div id="emptyState" class="text-center py-5" style="display: none;">
+            <p class="text-muted">لا توجد تقييمات مطابقة.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentStatus = 'All';
+    let searchTimeout;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadReviews();
+    });
+
+    function filterReviews(status, btn) {
+        currentStatus = status;
+
+        // Update active button
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active', 'btn-outline-primary'));
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.add('btn-outline-secondary'));
+
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-outline-primary', 'active');
+
+        loadReviews();
+    }
+
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadReviews();
+        }, 500);
+    }
+
+    async function loadReviews() {
+        const query = document.getElementById('searchInput').value;
+        const tbody = document.getElementById('reviewsTableBody');
+        const loading = document.getElementById('loading');
+        const emptyState = document.getElementById('emptyState');
+
+        tbody.innerHTML = '';
+        loading.style.display = 'block';
+        emptyState.style.display = 'none';
+
+        try {
+            let url = `/api/customers/reviews?status=${currentStatus}`;
+            if (query) {
+                url += `&search=${encodeURIComponent(query)}`;
+            }
+
+            const response = await fetch(url);
+            const reviews = await response.json();
+
+            loading.style.display = 'none';
+
+            if (reviews.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            reviews.forEach(review => {
+                const tr = document.createElement('tr');
+                let statusBadge = '';
+                if (review.status === 'Approved') statusBadge = '<span class="badge bg-success">منشور</span>';
+                else if (review.status === 'Rejected') statusBadge = '<span class="badge bg-danger">مخفي</span>';
+                else statusBadge = '<span class="badge bg-warning text-dark">قيد المراجعة</span>';
+
+                tr.innerHTML = `
+                    <td>
+                        <p class="mb-0 text-truncate" style="max-width: 300px;">${review.comment || 'بدون تعليق'}</p>
+                    </td>
+                    <td>${review.customer_name}</td>
+                    <td>${review.product_name}</td>
+                    <td>
+                        <div class="text-warning small">
+                            ${getStars(review.rating)}
+                        </div>
+                    </td>
+                    <td>${statusBadge}</td>
+                    <td>${new Date(review.created_at).toLocaleDateString('en-GB')}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="updateStatus('${review.id}', 'Approved')">نشر</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="updateStatus('${review.id}', 'Rejected')">إخفاء</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteReview('${review.id}')">حذف</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+            loading.style.display = 'none';
+        }
+    }
+
+    function getStars(rating) {
+        let stars = '';
+        for (let i = 0; i < 5; i++) {
+            if (i < rating) stars += '<i class="fa-solid fa-star"></i>';
+            else stars += '<i class="fa-regular fa-star"></i>';
+        }
+        return stars;
+    }
+
+    async function updateStatus(id, status) {
+        try {
+            const response = await fetch(`/api/customers/reviews/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            });
+            if (response.ok) {
+                loadReviews();
+            } else {
+                notifier.showToast('فشل تحديث الحالة', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            notifier.showToast('حدث خطأ', 'error');
+        }
+    }
+
+    async function deleteReview(id) {
+        if (!await notifier.showConfirm('هل أنت متأكد من حذف هذا التقييم؟')) return;
+
+        try {
+            const response = await fetch(`/api/customers/reviews/${id}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                loadReviews();
+            } else {
+                notifier.showToast('فشل الحذف', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            notifier.showToast('حدث خطأ', 'error');
+        }
+    }
+</script>
+{% endblock %}

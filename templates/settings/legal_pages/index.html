@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}الصفحات القانونية | منصة التاجر{% endblock %}
+
+{% block page_title %}الصفحات القانونية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/settings" class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center"
+            style="width: 40px; height: 40px;">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <h4 class="fw-bold mb-0">الصفحات القانونية</h4>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="legalPagesTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3" style="width: 40%">الصفحات</th>
+                        <th class="py-3">الحالة</th>
+                        <th class="pe-4 py-3 text-end" style="width: 20%">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="pagesList">
+                    <!-- Loaded dynamically -->
+                    <tr>
+                        <td colspan="3" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/settings_legal_pages.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPagesList();
+    });
+</script>
+{% endblock %}

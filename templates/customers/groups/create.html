@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}إنشاء مجموعة | منصة التاجر{% endblock %}
+
+{% block page_title %}إنشاء مجموعة{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/customers/groups/list" class="btn btn-light rounded-circle shadow-sm"
+            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <h1 class="h3 mb-0 fw-bold">إنشاء مجموعة عملاء</h1>
+    </div>
+</div>
+
+<form id="createGroupForm">
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">الاسم</label>
+                <input type="text" class="form-control" name="name" placeholder="أدخل اسم المجموعة" required>
+            </div>
+
+            <h6 class="mb-3">معايير المجموعة</h6>
+
+            <div class="row g-3">
+                <!-- Orders Count -->
+                <div class="col-md-12">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="checkOrders"
+                            onchange="toggleInputs('ordersInputs', this.checked)">
+                        <label class="form-check-label" for="checkOrders">عدد الطلبات</label>
+                    </div>
+                    <div id="ordersInputs" class="d-none ms-4 row g-2">
+                        <div class="col-md-3">
+                            <select class="form-select criteria-input" data-key="min_orders_op">
+                                <option value="gt">أكبر من</option>
+                                <option value="lt">أقل من</option>
+                                <option value="eq">يساوي</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control criteria-input" data-key="min_orders"
+                                placeholder="العدد">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- City -->
+                <div class="col-md-12">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="checkCity"
+                            onchange="toggleInputs('cityInputs', this.checked)">
+                        <label class="form-check-label" for="checkCity">المدينة</label>
+                    </div>
+                    <div id="cityInputs" class="d-none ms-4">
+                        <input type="text" class="form-control criteria-input" data-key="city"
+                            placeholder="اسم المدينة">
+                    </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="col-md-12">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="checkGender"
+                            onchange="toggleInputs('genderInputs', this.checked)">
+                        <label class="form-check-label" for="checkGender">الجنس</label>
+                    </div>
+                    <div id="genderInputs" class="d-none ms-4">
+                        <select class="form-select criteria-input" data-key="gender">
+                            <option value="male">ذكر</option>
+                            <option value="female">أنثى</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <button type="submit" class="btn btn-primary">حفظ المجموعة</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    function toggleInputs(id, show) {
+        const el = document.getElementById(id);
+        if (show) el.classList.remove('d-none');
+        else el.classList.add('d-none');
+    }
+
+    document.getElementById('createGroupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const name = formData.get('name');
+
+        // Build criteria object
+        const criteria = {};
+
+        // 1. Orders
+        if (document.getElementById('checkOrders').checked) {
+            const val = document.querySelector('[data-key="min_orders"]').value;
+            // Simple logic for now: just min_orders implying >= 
+            // In a real app we'd handle the operator (gt, lt)
+            if (val) criteria.min_orders = parseInt(val);
+        }
+
+        // 2. City
+        if (document.getElementById('checkCity').checked) {
+            const city = document.querySelector('[data-key="city"]').value;
+            if (city) criteria.city = city;
+        }
+
+        // 3. Gender
+        if (document.getElementById('checkGender').checked) {
+            const gender = document.querySelector('[data-key="gender"]').value;
+            if (gender) criteria.gender = gender;
+        }
+
+        try {
+            const res = await fetch('/api/customers/groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, criteria })
+            });
+
+            if (res.ok) {
+                window.location.href = '/customers/groups/list';
+            } else {
+                notifier.showToast('Error creating group', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            notifier.showToast('Error creating group', 'error');
+        }
+    });
+</script>
+{% endblock %}

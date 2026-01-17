@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}إنشاء مستخدم | منصة التاجر{% endblock %}
+
+{% block page_title %}إنشاء مستخدم{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/settings/team"
+            class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center"
+            style="width: 40px; height: 40px;">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <h4 class="fw-bold mb-0">{% if user %}تعديل مستخدم{% else %}إنشاء مستخدم{% endif %}</h4>
+    </div>
+    <div class="d-flex gap-2">
+        {% set mode = 'update' if user else 'create' %}
+        {% set user_id = user.id if user else '' %}
+        <button type="button" class="btn btn-primary px-4" id="saveBtn"
+            onclick="saveMember('{{ mode }}', '{{ user_id }}')">حفظ</button>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <!-- Main Content -->
+    <div class="col-lg-12">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0">معلومات العضو</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="fullName" class="form-label">الاسم</label>
+                        <input type="text" class="form-control" id="fullName"
+                            value="{{ user.full_name if user else '' }}" placeholder="">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="groupId" class="form-label">مجموعات الصلاحيات</label>
+                        <select class="form-select" id="groupId">
+                            <option value="" selected disabled>اختر مجموعة</option>
+                            <!-- Populated via JS -->
+                        </select>
+                        <div class="form-text mt-1 text-end">
+                            <a href="/settings/team/groups/create" class="text-decoration-none small">+ أضف مستخدماً
+                                جديداً إلى مجموعة مشابه</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">البريد الإلكتروني</label>
+                        <input type="email" class="form-control" id="email" value="{{ user.email if user else '' }}"
+                            placeholder="">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="phoneNumber" class="form-label">الهاتف</label>
+                        <input type="text" class="form-control" id="phoneNumber"
+                            value="{{ user.phone_number if user else '' }}" placeholder="">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="username" class="form-label">اسم المستخدم (للدخول)</label>
+                        <input type="text" class="form-control" id="username"
+                            value="{{ user.username if user else '' }}" {% if user %}disabled{% endif %}>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="password" class="form-label">كلمة المرور {% if user %}(اتركها فارغة للتجاهل){% endif
+                            %}</label>
+                        <input type="password" class="form-control" id="password" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="posAccess">
+                        <label class="form-check-label" for="posAccess">
+                            مستخدم الكاشير لنقطة البيع
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/settings_team.js?v=2"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadGroups('{{ user.group_id if user and user.group_id else "" }}');
+    });
+</script>
+{% endblock %}

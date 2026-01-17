@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if option %}تعديل خيار{% else %}خيار جديد{% endif %} | منصة التاجر
+{% endblock %}
+
+{% block page_title %}
+{% if option %}تعديل خيار{% else %}خيار جديد{% endif %}
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* Specific styles for this form that aren't global yet */
+    .values-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        background: #f8fafc;
+    }
+
+    .value-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        align-items: center;
+    }
+
+    .value-row input {
+        flex: 1;
+    }
+
+    .color-preview {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        cursor: pointer;
+    }
+
+    .btn-remove {
+        color: #ef4444;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-header mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/catalog/options" class="btn btn-light rounded-circle shadow-sm"
+            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <h1 class="h3 mb-0 fw-bold">{{ 'تعديل خيار' if option else 'خيار جديد' }}</h1>
+    </div>
+</div>
+
+<div class="form-card">
+    <form id="optionForm">
+        <input type="hidden" id="optionId" value="{{ option.id if option else '' }}">
+
+        <div class="form-group">
+            <label>اسم الخيار (Attribute Name)</label>
+            <input type="text" class="input-style" id="optionName" placeholder="مثال: اللون، المقاس، المادة"
+                value="{{ option.name if option else '' }}" required>
+            <small style="color:#64748b; font-size:0.85rem; margin-top:5px; display:block">اسم السمة الذي سيظهر في صفحة
+                المنتج.</small>
+        </div>
+
+        <div class="form-group">
+            <label>نوع العرض (Display Type)</label>
+            <select class="input-style" id="optionType" onchange="OptionForm.handleTypeChange()">
+                <option value="text" {% if option and option.type=='text' %}selected{% endif %}>نص / أزرار</option>
+                <option value="color" {% if option and option.type=='color' %}selected{% endif %}>لون (Color Swatch)
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>القيم المتاحة</label>
+            <div class="values-container" id="valuesList">
+                <!-- Values injected here -->
+            </div>
+            <button type="button" class="action-btn secondary" style="margin-top:10px; width:100%"
+                onclick="OptionForm.addValueRow()">
+                <i class="fa-solid fa-plus"></i> إضافة قيمة
+            </button>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="action-btn secondary"
+                onclick="window.location.href='/catalog/options'">إلغاء</button>
+            <button type="submit" class="action-btn">حفظ التغييرات</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // Injected data
+    const EXISTING_VALUES = [];
+    // {% if option and option.values %}
+    // {% for val in option.values %}
+    EXISTING_VALUES.push({ "id": "{{ val.id }}", "value": "{{ val.value }}", "meta": "{{ val.meta or '' }}" });
+    // {% endfor %}
+    // {% endif %}
+</script>
+<script src="{{ url_for('static', path='js/options_form.js') }}?v=2"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        OptionForm.init();
+    });
+</script>
+{% endblock %}

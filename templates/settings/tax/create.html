@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}إضافة ضريبة بلد جديدة{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-12 d-flex align-items-center gap-3">
+        <a href="/settings/tax" class="btn btn-light border btn-icon">
+            <i class="fas fa-arrow-right"></i>
+        </a>
+        <h3 class="mb-0 fw-bold">إضافة ضريبة بلد جديدة</h3>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+        <form id="createCountryTaxForm">
+            <!-- Country Select -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">اختر الدولة</label>
+                <select class="form-select" id="countrySelect" required>
+                    <option value="" disabled selected>اختر الدولة</option>
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <!-- Tax Info -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">الرقم الضريبي</label>
+                    <input type="text" class="form-control" id="taxNumber" placeholder="الرقم الضريبي" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">نسبة ضريبة القيمة المضافة</label>
+                    <div class="input-group dir-ltr" dir="ltr">
+                        <span class="input-group-text">%</span>
+                        <input type="number" class="form-control text-center" id="taxRate"
+                            placeholder="نسبة ضريبة القيمة المضافة" min="0" step="0.01" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Certificate Upload -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">شهادة ضريبة القيمة المضافة</label>
+                <div class="border rounded p-5 text-center bg-light" id="uploadZone"
+                    style="border-style: dashed !important; cursor: pointer;">
+                    <div class="mb-3">
+                        <i class="fas fa-file-upload fa-2x text-primary"></i>
+                    </div>
+                    <p class="mb-1 text-primary">استعراض أو اسحب الملف وأفلته هنا</p>
+                    <small class="text-muted">PDF أو PNG, JPEG, JPG, DOC, DOCX</small>
+                    <input type="file" id="vatCertificateFile" class="d-none" accept=".pdf,.png,.jpeg,.jpg,.doc,.docx">
+                </div>
+                <div id="filePreview" class="mt-2 text-success small"></div>
+            </div>
+
+            <!-- Footer Display Options -->
+            <div class="mb-4 pt-4 border-top">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h6 class="fw-bold mb-1">عرض الرقم الضريبي في تذييل صفحة المتجر</h6>
+                    </div>
+                    <div class="form-check form-switch custom-switch">
+                        <input class="form-check-input" type="checkbox" id="displayTaxNumber" checked>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-1">عرض شهادة ضريبة القيمة المضافة في تذييل صفحة المتجر (كما هو موضح في
+                            المثال)</h6>
+                    </div>
+                    <div class="form-check form-switch custom-switch">
+                        <input class="form-check-input" type="checkbox" id="displayVatCertificate" checked>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="form-check mb-5">
+                <input class="form-check-input" type="checkbox" id="agreementCheck" required>
+                <label class="form-check-label user-select-none" for="agreementCheck">
+                    أُقر بأنني اطلعت على دليل ضريبة القيمة المضافة في الدول التي تُطبق فيها، وتم الالتزام بالأنظمة
+                    المحددة
+                </label>
+            </div>
+
+            <div class="text-start">
+                <button type="submit" class="btn btn-primary-theme px-5 py-2">حفظ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/settings_tax.js') }}?v=2"></script>
+{% endblock %}

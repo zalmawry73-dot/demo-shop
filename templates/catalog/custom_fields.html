@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}الحقول المخصصة | منصة التاجر{% endblock %}
+{% block page_title %}إدارة الحقول المخصصة{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h1>الحقول المخصصة</h1>
+        <p style="color:#64748b; margin-top:5px">إضافة بيانات إضافية للمنتجات مثل "المؤلف"، "الخامة"، "فترة الضمان"
+            وغيرها.</p>
+    </div>
+    <div class="actions">
+        <button class="action-btn primary" onclick="CustomFieldsManager.openModal()">
+            <i class="fa-solid fa-plus"></i> حقل جديد
+        </button>
+    </div>
+</div>
+
+<div class="card table-card">
+    <div class="table-responsive">
+        <table id="fieldsTable">
+            <thead>
+                <tr>
+                    <th>الاسم الظاهر</th>
+                    <th>المفتاح البرمجي (Key)</th>
+                    <th>النوع</th>
+                    <th>مطلوب؟</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="fieldsTableBody">
+                <!-- Data -->
+            </tbody>
+        </table>
+    </div>
+    <div id="loadingState" style="text-align:center; padding: 40px; display:none;">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="fieldModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">حقل جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="fieldForm">
+                    <input type="hidden" id="fieldId">
+                    <div class="mb-3">
+                        <label class="form-label">الاسم الظاهر</label>
+                        <input type="text" id="fieldName" class="form-control input-style" required
+                            placeholder="e.g. Author">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">المفتاح (Key)</label>
+                        <input type="text" id="fieldKey" class="form-control input-style" required
+                            placeholder="e.g. author_name" style="direction:ltr">
+                        <small class="text-muted">يستخدم في البرمجة وال API. أحرف إنجليزية و _ فقط.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">نوع الحقل</label>
+                        <select id="fieldType" class="form-control input-style">
+                            <option value="text">نص (Text)</option>
+                            <option value="number">رقم (Number)</option>
+                            <option value="date">تاريخ (Date)</option>
+                            <option value="boolean">نعم/لا (Boolean)</option>
+                            <!-- <option value="select">قائمة (Select)</option> Not fully implemented in UI yet -->
+                        </select>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="fieldRequired">
+                        <label class="form-check-label" for="fieldRequired">
+                            حقل إلزامي
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="action-btn secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="action-btn primary" onclick="CustomFieldsManager.save()">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('static', path='js/custom_fields.js') }}"></script>
+{% endblock %}

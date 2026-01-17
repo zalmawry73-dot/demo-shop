@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if category %}تعديل تصنيف: {{ category.name }}{% else %}إنشاء تصنيف جديد{% endif %} | منصة التاجر
+{% endblock %}
+
+{% block styles %}
+<style>
+    .form-section {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #334155;
+    }
+
+    .image-preview-box {
+        border: 2px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        background: #f8fafc;
+        cursor: pointer;
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        transition: all 0.2s;
+    }
+
+    .image-preview-box:hover {
+        border-color: #3b82f6;
+        background: #f1f5f9;
+    }
+
+    .preview-img {
+        max-width: 100%;
+        max-height: 180px;
+        border-radius: 4px;
+        display: none;
+    }
+
+    .preview-active .preview-img {
+        display: block;
+    }
+
+    .preview-active .upload-placeholder {
+        display: none;
+    }
+
+    .remove-img-btn {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        /* RTL */
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .preview-active .remove-img-btn {
+        display: flex;
+    }
+</style>
+{% endblock %}
+
+{% block page_title %}
+{% if category %}تعديل التصنيف{% else %}إنشاء تصنيف جديد{% endif %}
+{% endblock %}
+
+{% block content %}
+<form id="categoryForm">
+    <!-- Hidden input for ID if editing -->
+    {% if category %}
+    <input type="hidden" id="categoryId" name="id" value="{{ category.id }}">
+    {% endif %}
+
+    <!-- Action Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/catalog/categories" class="btn btn-light rounded-circle shadow-sm"
+                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <div>
+                <h1 class="h3 mb-0 fw-bold">{% if category %}تعديل تصنيف{% else %}إنشاء تصنيف جديد{% endif %}</h1>
+                <p class="text-muted mb-0 small">تحكم في تصنيفات متجرك وأضف صورها وأوصافها.</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4" id="saveBtn">حفظ التصنيف</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- RIGHT COLUMN (Main Info) - RTL: Right is first conceptually but BS grid is LTR based so logical placement -->
+        <!-- In RTL HTML 'col-lg-8' will be on right -->
+        <div class="col-lg-8">
+            <div class="form-section">
+                <h5 class="mb-4 text-primary">معلومات التصنيف</h5>
+
+                <div class="mb-3">
+                    <label class="form-label d-block">نوع التصنيف</label>
+                    <div class="btn-group" role="group" id="categoryTypeGroup">
+                        <input type="radio" class="btn-check" name="is_dynamic" id="typeManual" value="false"
+                            autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="typeManual">يدوي (منتجات مختارة)</label>
+
+                        <input type="radio" class="btn-check" name="is_dynamic" id="typeSmart" value="true"
+                            autocomplete="off">
+                        <label class="btn btn-outline-primary" for="typeSmart">ذكي (تصفية تلقائية)</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">اسم التصنيف (العربية)</label>
+                    <input type="text" class="form-control form-control-lg" name="name" id="categoryName" required
+                        placeholder="أدخل اسم التصنيف..." value="{{ category.name if category else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">الوصف</label>
+                    <textarea class="form-control" name="description" rows="5"
+                        placeholder="اكتب وصفاً للتصنيف...">{{ category.description if category else '' }}</textarea>
+                </div>
+            </div>
+
+            <!-- Smart Rules Builder -->
+            <div class="form-section" id="smartRulesSection" style="display:none;">
+                <h5 class="mb-3 text-primary">قواعد التصفية (Filtering Rules)</h5>
+                <p class="text-muted small">سيتم إضافة المنتجات التي تطابق هذه الشروط تلقائياً لهذا التصنيف.</p>
+
+                <div class="row mb-3 align-items-center">
+                    <div class="col-auto">
+                        <label class="form-label mb-0">تطابق:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select form-select-sm" id="ruleMatch">
+                            <option value="all">جميع الشروط (AND)</option>
+                            <option value="any">أي شرط (OR)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="rulesContainer">
+                    <!-- Rules via JS -->
+                </div>
+
+                <div class="mt-3">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addRuleBtn">
+                        <i class="fa-solid fa-plus"></i> إضافة شرط
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="previewRulesBtn">
+                        <i class="fa-solid fa-eye"></i> معاينة النتائج
+                    </button>
+                </div>
+
+                <div class="mt-3 p-3 bg-light rounded" id="rulesPreviewArea" style="display:none;">
+                    <h6>نتائج المعاينة: <span id="previewCount">0</span> منتج</h6>
+                    <ul id="previewList" class="small text-muted mb-0 ps-3"></ul>
+                </div>
+
+                <!-- Hidden Input for JSON -->
+                <input type="hidden" name="rules" id="rulesJson"
+                    value="{{ category.rules if category and category.rules else '' }}">
+            </div>
+
+            <!-- SEO Card -->
+            <div class="form-section">
+                <h5 class="mb-4 text-primary">تحسين محركات البحث (SEO)</h5>
+
+                <div class="mb-3">
+                    <label class="form-label">عنوان الصفحة (Page Title)</label>
+                    <input type="text" class="form-control" name="seo_title" id="seoTitle"
+                        value="{{ category.seo_title if category else '' }}">
+                    <div class="form-text">العنوان الذي يظهر في نتائج البحث.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">وصف الميتا (Meta Description)</label>
+                    <textarea class="form-control" name="seo_description" rows="3"
+                        maxlength="160">{{ category.seo_description if category else '' }}</textarea>
+                    <div class="form-text">وصف مختصر يظهر أسفل العنوان في جوجل (بحد أقصى 160 حرف).</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">رابط التصنيف (URL Handle)</label>
+                    <div class="input-group" dir="ltr">
+                        <span class="input-group-text bg-light">/categories/</span>
+                        <input type="text" class="form-control" name="slug" id="categorySlug"
+                            value="{{ category.slug if category else '' }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEFT COLUMN (Sidebar) -->
+        <div class="col-lg-4">
+
+            <!-- Status Card -->
+            <div class="form-section">
+                <h5 class="mb-3 text-primary">حالة النشر</h5>
+                <div class="form-check form-switch p-0 m-0 d-flex justify-content-between align-items-center">
+                    <label class="form-check-label" for="isActive">نشر في المتجر</label>
+                    <input class="form-check-input ms-0" type="checkbox" id="isActive" name="is_active" {% if not
+                        category or category.is_active %}checked{% endif %}>
+                </div>
+            </div>
+
+            <!-- Parent Category Card -->
+            <div class="form-section">
+                <h5 class="mb-3 text-primary">التصنيف الأب</h5>
+                <label class="form-label small text-muted">اختر التصنيف الرئيسي الذي يندرج تحته هذا التصنيف</label>
+                <select class="form-select" name="parent_id" id="categoryParent">
+                    <option value="">(تصنيف رئيسي)</option>
+                    <!-- Populated via JS -->
+                </select>
+                <!-- Hidden inputs to help JS logic -->
+                <input type="hidden" id="currentParentId" value="{{ category.parent_id if category else '' }}">
+                {% if category %}
+                <input type="hidden" id="currentId" value="{{ category.id }}">
+                {% endif %}
+            </div>
+
+            <!-- Image Card -->
+            <div class="form-section">
+                <h5 class="mb-3 text-primary">صورة التصنيف</h5>
+
+                <div class="image-preview-box {% if category and category.image_url %}preview-active{% endif %}"
+                    id="imageUploadBox">
+                    <div class="upload-placeholder">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <p class="mb-0 text-muted">اضغط للرفع أو اسحب الصورة هنا</p>
+                    </div>
+
+                    <img src="{{ category.image_url if category else '' }}" class="preview-img" id="imgPreview">
+                    <button type="button" class="remove-img-btn" id="removeImgBtn"><i class="fas fa-times"></i></button>
+
+                    <!-- Hidden file input -->
+                    <input type="file" id="imageInput" accept="image/*" style="display:none">
+                    <!-- Text input for URL (backend expects image_url path) -->
+                    <input type="hidden" name="image_url" id="imageUrlInput"
+                        value="{{ category.image_url if category else '' }}">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/category_form.js?v=2"></script>
+{% endblock %}

@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}الإعدادات | منصة التاجر{% endblock %}
+
+{% block page_title %}الإعدادات{% endblock %}
+
+{% block styles %}
+<style>
+    .settings-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+        color: inherit;
+        text-decoration: none;
+        display: block;
+    }
+
+    .settings-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .settings-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        color: #5c6bc0;
+        font-size: 1.25rem;
+    }
+
+    .settings-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .settings-desc {
+        color: #6c757d;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12">
+        <h4 class="mb-4 fw-bold">الإعدادات</h4>
+    </div>
+</div>
+
+<!-- General Section -->
+<div class="mb-5">
+    <h5 class="mb-4 fw-bold text-end">عام</h5>
+    <div class="row g-4" dir="rtl">
+        <div class="col-md-6 col-lg-4">
+            <a href="/account/settings" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    <h6 class="settings-title">إعدادات الحساب</h6>
+                    <p class="settings-desc mb-0">تخصيص إعدادات الحساب الشخصي مثل كلمة المرور ومعلومات التواصل</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/account/security" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h6 class="settings-title">إعدادات الأمان</h6>
+                    <p class="settings-desc mb-0">إدارة التحقق بخطوتين (2FA)، وكلمات المرور لمرة واحدة (OTP)، وجلسات
+                        الدخول</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Languages & Currencies -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/languages-currencies" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-language"></i>
+                    </div>
+                    <h6 class="settings-title">اللغات والعملات</h6>
+                    <p class="settings-desc mb-0">تخصيص اللغات والعملات المتاحة</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Checkout Settings -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/checkout" class="card border-0 shadow-sm rounded-4 h-100 p-4 settings-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="settings-icon">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                </div>
+                <h5 class="settings-title">خيارات صفحة اتمام عملية الشراء</h5>
+                <p class="settings-desc">تحكم بخيارات الدفع والحقول في صفحة الشراء</p>
+            </a>
+        </div>
+
+        <!-- Gifting Options -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/gifting" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                    <h6 class="settings-title">خيارات الإهداء</h6>
+                    <p class="settings-desc mb-0">ضبط ميزات الإهداء للمنتجات مثل رسائل الإهداء وبطاقات الإهداء</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Invoice Settings -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/invoice" class="card border-0 shadow-sm rounded-4 h-100 p-4 settings-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="settings-icon">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                </div>
+                <h5 class="settings-title">إعدادات الفواتير</h5>
+                <p class="settings-desc">تخصيص شكل الفواتير والبيانات الظاهرة فيها</p>
+            </a>
+        </div>
+
+        <!-- Order & Product Properties -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/orders-products" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-basket-shopping"></i>
+                    </div>
+                    <h6 class="settings-title">خصائص الطلبات والمنتجات</h6>
+                    <p class="settings-desc mb-0">تخصيص خصائص الطلبات والمنتجات</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Shipping & Payment Restrictions -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/constraints" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-ban"></i> <!-- Or fa-truck-fast -->
+                    </div>
+                    <h6 class="settings-title">قيود الشحن والدفع</h6>
+                    <p class="settings-desc mb-0">تحديد القواعد أو القيود التي تؤثر على طرق الدفع وخيارات الشحن المتاحة
+                        في ظروف معينة</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Tax Settings -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/tax" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <h6 class="settings-title">إعدادات الضرائب</h6>
+                    <p class="settings-desc mb-0">تخصيص نسبة ضريبة القيمة المضافة والضرائب الأخرى</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- ZATCA -->
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <h6 class="settings-title">الربط مع منصة فاتورة (ZATCA)</h6>
+                    <p class="settings-desc mb-0">ربط متجرك مع هيئة الزكاة والضريبة والجمارك (ZATCA) للامتثال السلس
+                        للفوترة الإلكترونية</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Team Notifications -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/staff-notifications" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-regular fa-bell"></i>
+                    </div>
+                    <h6 class="settings-title">إشعارات الفريق</h6>
+                    <p class="settings-desc mb-0">إدارة إشعارات الفريق عند تغيير حالة الطلب</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- API -->
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h6 class="settings-title">التكاملات مع واجهات البرمجة (API)</h6>
+                    <p class="settings-desc mb-0">إنشاء رمز المدير لربط زد بأنظمة أخرى وتحسين إدارة المتجر</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Export Requests -->
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-file-export"></i>
+                    </div>
+                    <h6 class="settings-title">طلبات التصدير</h6>
+                    <p class="settings-desc mb-0">عرض جميع طلبات تصدير الملفات، وإدارتها، وتنزيل الملفات المتاحة</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Communication Section -->
+<div class="mb-5">
+    <h5 class="mb-4 fw-bold text-end">التواصل</h5>
+    <div class="row g-4" dir="rtl">
+        <!-- Order Messages -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/notifications/orders" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-regular fa-message"></i>
+                    </div>
+                    <h6 class="settings-title">رسائل الطلبات</h6>
+                    <p class="settings-desc mb-0">إدارة الرسائل التلقائية التي تُرسل للعملاء عند تغيير حالة الطلب (مثل:
+                        مُكتمل، جاري الشحن، تم التسليم)</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Abandoned Cart Alerts -->
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <h6 class="settings-title">تنبيهات السلات المتروكة</h6>
+                    <p class="settings-desc mb-0">إعداد تنبيهات تُرسل تلقائيًا للعملاء الذين يتركون منتجات في سلتهم دون
+                        إكمال الطلب، لتحفيزهم على العودة</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Product Questions -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/communications/questions" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-regular fa-circle-question"></i>
+                    </div>
+                    <h6 class="settings-title">أسئلة المنتجات</h6>
+                    <p class="settings-desc mb-0">اختر طريقة الإشعار بالأسئلة على المنتجات.</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Reviews -->
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-regular fa-comment-dots"></i>
+                    </div>
+                    <h6 class="settings-title">رسائل التقييمات</h6>
+                    <p class="settings-desc mb-0">إعداد رسائل لتشجيع العملاء على تقييم المنتجات التي اشتروها.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Store Section -->
+<div class="mb-5">
+    <h5 class="mb-4 fw-bold text-end">المتجر</h5>
+    <div class="row g-4" dir="rtl">
+        <!-- Store Info -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/information" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <h6 class="settings-title">بيانات المتجر</h6>
+                    <p class="settings-desc mb-0">إدارة تفاصيل نشاطك التجاري، وعنوانك، ومعلومات التواصل</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Legal Pages -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/legal-pages" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <h6 class="settings-title">الصفحات القانونية</h6>
+                    <p class="settings-desc mb-0">تعديل السياسات والتراخيص الخاصة بالمتجر</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Working Hours -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/maintenance" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <h6 class="settings-title">أوقات العمل الرسمية</h6>
+                    <p class="settings-desc mb-0">تحديد ساعات العمل التي يُعتبر فيها متجرك الإلكتروني مفتوحًا أو تكون
+                        فيها بعض الخدمات متاحة</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Team -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/team" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-users-gear"></i>
+                    </div>
+                    <h6 class="settings-title">فريق العمل</h6>
+                    <p class="settings-desc mb-0">تخصيص صلاحيات أعضاء الفريق</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Team Groups -->
+        <div class="col-md-6 col-lg-4">
+            <a href="/settings/team/groups" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-users-rectangle"></i>
+                    </div>
+                    <h6 class="settings-title">مجموعات فريق العمل</h6>
+                    <p class="settings-desc mb-0">تخصيص صلاحيات المجموعات</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Store Link -->
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="card border-0 shadow-sm settings-card p-4">
+                <div class="d-flex flex-column align-items-center text-center">
+                    <div class="settings-icon mb-3">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <h6 class="settings-title">رابط المتجر الإلكتروني</h6>
+                    <p class="settings-desc mb-0">إدارة عناوين الويب (النطاقات - Domains) التي تشير إلى متجرك
+                        الإلكتروني.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

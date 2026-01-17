@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}قيود الشحن والدفع{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>قيود الشحن والدفع</h1>
+    <a href="/settings" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-right list-icon"></i> عودة
+    </a>
+</div>
+
+<div class="card card-custom">
+    <div class="card-body">
+        <!-- Tabs -->
+        <ul class="nav nav-pills mb-4" id="constraintsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="shipping-tab" data-bs-toggle="pill" data-bs-target="#shipping"
+                    type="button" role="tab" aria-controls="shipping" aria-selected="true">قيود الشحن</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="payment-tab" data-bs-toggle="pill" data-bs-target="#payment" type="button"
+                    role="tab" aria-controls="payment" aria-selected="false">قيود الدفع</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="constraintsTabContent">
+            <!-- Shipping Constraints Tab -->
+            <div class="tab-pane fade show active" id="shipping" role="tabpanel" aria-labelledby="shipping-tab">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="input-group w-50">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchShipping" placeholder="البحث بإسم القيد">
+                    </div>
+                    <a href="/settings/constraints/shipping/create" class="btn btn-primary">
+                        <i class="fas fa-plus list-icon"></i> إنشاء قيد
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>اسم القيد</th>
+                                <th>عدد شركات الشحن</th>
+                                <th>عدد الشروط</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shippingConstraintsTable">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payment Constraints Tab (Placeholder) -->
+            <!-- Payment Constraints Tab -->
+            <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="input-group w-50">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchPayment" placeholder="البحث بإسم القيد">
+                    </div>
+                    <a href="/settings/constraints/payment/create" class="btn btn-primary">
+                        <i class="fas fa-plus list-icon"></i> إنشاء قيد
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>اسم القيد</th>
+                                <th>عدد خيارات الدفع</th>
+                                <th>عدد الشروط</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentConstraintsTable">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/settings_constraints.js') }}"></script>
+{% endblock %}

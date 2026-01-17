@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}إنشاء جرد | منصة التاجر{% endblock %}
+{% block page_title %}
+<div class="d-flex align-items-center gap-2">
+    <a href="/inventory/stock-taking" class="text-decoration-none text-muted"><i
+            class="fa-solid fa-arrow-right"></i></a>
+    <span>{{ 'تفاصيل الجرد' if stock_taking else 'إنشاء جرد' }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row" id="app">
+    <div class="col-12">
+        <!-- Main Header with Back Button -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <a href="/inventory/stock-taking" class="btn btn-light rounded-circle shadow-sm"
+                    style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <h1 class="h3 mb-0 fw-bold">جرد المخزون</h1>
+            </div>
+        </div>
+
+        <!-- Sub Header Actions (existing) -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="mb-1">{{ stock_taking.name if stock_taking else 'أدخل المنتجات المراد جردها' }}</h5>
+                {% if stock_taking %}
+                <span
+                    class="badge {{ 'bg-warning text-dark' if stock_taking.status.value == 'draft' else 'bg-success' }}">
+                    {{ stock_taking.status.value }}
+                </span>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2">
+                {% if not stock_taking or stock_taking.status.value == 'draft' %}
+                <button class="btn btn-outline-secondary" onclick="window.location.href='/inventory/stock-taking'">حفظ
+                    كمسودة</button>
+                {% if stock_taking %}
+                <button class="btn btn-primary px-4" id="finalizeBtn">ترحيل المخزون (إنهاء الجرد)</button>
+                {% else %}
+                <button class="btn btn-primary px-4" id="createBtn">بدء عملية الجرد</button>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Form Info -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 fw-bold">بيانات الجرد</div>
+            <div class="card-body">
+                <form id="headerForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">اسم الجرد</label>
+                            <input type="text" class="form-control" name="name"
+                                value="{{ stock_taking.name if stock_taking else '' }}" {{ 'disabled' if stock_taking
+                                else '' }} required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">موقع المخزون</label>
+                            {% if stock_taking %}
+                            <input type="text" class="form-control" value="{{ stock_taking.warehouse.name }}" disabled>
+                            {% else %}
+                            <select class="form-select" name="warehouse_id" id="whSelect" required></select>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">نوع الجرد</label>
+                            <select class="form-select" name="type" {{ 'disabled' if stock_taking else '' }}>
+                                <option value="partial" {{ 'selected' if stock_taking and stock_taking.type=='partial'
+                                    else '' }}>جزئي (منتجات محددة)</option>
+                                <option value="full" {{ 'selected' if stock_taking and stock_taking.type=='full' else ''
+                                    }}>كلي (كل المستودع)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ملاحظة</label>
+                            <input type="text" class="form-control" name="notes"
+                                value="{{ stock_taking.notes if stock_taking else '' }}" {{ 'disabled' if stock_taking
+                                else '' }}>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if stock_taking %}
+        <!-- Products Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <span class="fw-bold">المنتجات</span>
+                <div class="input-group w-25 input-group-sm">
+                    <span class="input-group-text"><i class="fa-solid fa-search"></i></span>
+                    <input type="text" class="form-control" placeholder="بحث..." id="searchItem">
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th style="width: 40%">المنتج</th>
+                            <th>الباركود</th>
+                            <th>الكمية المتوقعة (System)</th>
+                            <th style="width: 15%">الكمية الفعلية (Counted)</th>
+                            <th>الفارق</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        {% for item in stock_taking.items %}
+                        <tr>
+                            <td class="ps-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="{% if item.variant and item.variant.product and item.variant.product.images %}{{ item.variant.product.images[0].image_url }}{% else %}/static/placeholder.png{% endif %}"
+                                        style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                                    <div>
+                                        <div class="fw-medium">{{ item.variant.product.name if item.variant and
+                                            item.variant.product else 'غير متوفر' }}</div>
+                                        <small class="text-muted">{{ item.variant.sku if item.variant else '-'
+                                            }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ item.variant.barcode if item.variant and item.variant.barcode else '-' }}</td>
+                            <td class="text-center bg-light">{{ item.expected_qty }}</td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-center count-input"
+                                    value="{{ item.counted_qty if item.counted_qty is not none else '' }}"
+                                    data-vid="{{ item.variant_id }}" {{ 'disabled' if stock_taking.status.value
+                                    !='draft' else '' }}>
+                            </td>
+                            <td class="text-center fw-bold diff-cell text-muted">-</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+
+        // Setup Warehouse Select if Create Mode
+        const whSelect = document.getElementById('whSelect');
+        if (whSelect) {
+            const res = await fetch('/api/warehouses');
+            const whs = await res.json();
+            whs.forEach(w => {
+                const opt = document.createElement('option');
+                opt.value = w.id;
+                opt.textContent = w.name;
+                whSelect.appendChild(opt);
+            });
+        }
+
+        // Create Action
+        const createBtn = document.getElementById('createBtn');
+        if (createBtn) {
+            createBtn.addEventListener('click', async () => {
+                const form = document.getElementById('headerForm');
+                const data = Object.fromEntries(new FormData(form).entries());
+                data.warehouse_id = parseInt(data.warehouse_id);
+
+                try {
+                    const res = await axios.post('/api/stock-taking', data);
+                    notifier.showFlashToast('تم إنشاء الجرد بنجاح', 'success');
+                    window.location.href = `/inventory/stock-taking/${res.data.id}`;
+                } catch (e) {
+                    notifier.showToast('فشل إنشاء الجرد', 'error');
+                }
+            });
+        }
+
+        // Live Diff Calculation & Saving
+        const inputs = document.querySelectorAll('.count-input');
+        inputs.forEach(inp => {
+            inp.addEventListener('input', (e) => updateDiff(e.target));
+            inp.addEventListener('change', (e) => saveCount(e.target));
+            // Init diff
+            if (inp.value !== '') updateDiff(inp);
+        });
+
+        function updateDiff(input) {
+            const row = input.closest('tr');
+            const expected = parseInt(row.querySelector('td:nth-child(3)').innerText);
+            const counted = parseInt(input.value);
+            const diffCell = row.querySelector('.diff-cell');
+
+            if (isNaN(counted)) {
+                diffCell.innerText = '-';
+                diffCell.className = 'text-center fw-bold diff-cell text-muted';
+                return;
+            }
+
+            const diff = counted - expected;
+            diffCell.innerText = (diff > 0 ? '+' : '') + diff;
+
+            if (diff === 0) diffCell.className = 'text-center fw-bold diff-cell text-success';
+            else if (diff < 0) diffCell.className = 'text-center fw-bold diff-cell text-danger';
+            else diffCell.className = 'text-center fw-bold diff-cell text-primary';
+        }
+
+        async function saveCount(input) {
+            const id = "{{ stock_taking.id if stock_taking else '' }}";
+            if (!id) return;
+
+            try {
+                input.classList.add('bg-light-yellow'); // saving indicator visual?
+                await axios.post(`/api/stock-taking/${id}/items`, {
+                    variant_id: input.dataset.vid,  // Keep as string (UUID)
+                    counted_qty: parseInt(input.value)
+                });
+                input.classList.remove('bg-light')
+                input.style.borderColor = '#198754'; // Success green border
+            } catch (e) {
+                input.style.borderColor = '#dc3545'; // Error red
+                notifier.showToast('فشل حفظ الكمية', 'error');
+            }
+        }
+
+        // Finalize
+        const finalizeBtn = document.getElementById('finalizeBtn');
+        if (finalizeBtn) {
+            finalizeBtn.addEventListener('click', async () => {
+                if (!await notifier.showConfirm('هل أنت متأكد من إنهاء عملية الجرد؟ سيتم تعديل كميات المخزون بناءً على المدخلات.')) return;
+
+                const id = "{{ stock_taking.id if stock_taking else '' }}";
+                try {
+                    finalizeBtn.disabled = true;
+                    finalizeBtn.textContent = 'جاري المعالجة...';
+                    await axios.post(`/api/stock-taking/${id}/finalize`);
+                    window.location.reload();
+                } catch (e) {
+                    notifier.showToast('حدث خطأ أثناء الترحيل', 'error');
+                    finalizeBtn.disabled = false;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

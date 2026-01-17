@@ -1,0 +1,29 @@
+<!-- Category Selector Modal -->
+<div class="modal fade" id="categorySelectorModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">اختر التصنيفات</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0" placeholder="بحث" id="categorySearchInput">
+                </div>
+                <div class="list-group" id="categorySelectorList" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Categories will be populated here via JS -->
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="confirmCategorySelectionBtn">تأكيد الاختيار</button>
+            </div>
+        </div>
+    </div>
+</div>

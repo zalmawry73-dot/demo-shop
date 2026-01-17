@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل الطلب | منصة التاجر</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .info-group {
+            margin-bottom: 15px;
+        }
+
+        .info-group label {
+            display: block;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .info-group .value {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .items-table th {
+            text-align: right;
+            color: #64748b;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .items-table td {
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-weight: 500;
+        }
+
+        .total-row.final {
+            border-top: 2px solid #e2e8f0;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        @media(max-width: 768px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar EXACT COPY from Dashboard -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>منصة التاجر</span>
+                </div>
+                <button class="close-sidebar-btn" id="closeSidebar"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a href="/dashboard" class="nav-link">
+                            <i class="fa-solid fa-home"></i>
+                            <span>لوحة التحكم</span>
+                        </a>
+                    </li>
+
+                    <!-- Orders (Active) -->
+                    <li class="nav-item has-submenu open">
+                        <a href="javascript:void(0)" class="nav-link toggle-submenu">
+                            <div class="link-content">
+                                <i class="fa-solid fa-receipt"></i>
+                                <span>الطلبات</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                        </a>
+                        <ul class="submenu" style="display: block;">
+                            <li><a href="/orders">جميع الطلبات</a></li>
+                            <li><a href="/orders/drafts">مسودات الطلبات</a></li>
+                            <li><a href="/orders/abandoned">السلات المتروكة</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Products -->
+                    <li class="nav-item has-submenu">
+                        <a href="javascript:void(0)" class="nav-link toggle-submenu">
+                            <div class="link-content">
+                                <i class="fa-solid fa-box-open"></i>
+                                <span>المنتجات</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-left arrow-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/catalog/products">جميع المنتجات</a></li>
+                            <li><a href="#">التصنيفات</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Inventory -->
+                    <li class="nav-item has-submenu">
+                        <a href="javascript:void(0)" class="nav-link toggle-submenu">
+                            <div class="link-content">
+                                <i class="fa-solid fa-warehouse"></i>
+                                <span>المخزون</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-left arrow-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="#">إدارة المخزون</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Customers -->
+                    <li class="nav-item has-submenu">
+                        <a href="javascript:void(0)" class="nav-link toggle-submenu">
+                            <div class="link-content">
+                                <i class="fa-solid fa-users"></i>
+                                <span>العملاء</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-left arrow-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="#">جميع العملاء</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Marketing -->
+                    <li class="nav-item has-submenu">
+                        <a href="javascript:void(0)" class="nav-link toggle-submenu">
+                            <div class="link-content">
+                                <i class="fa-solid fa-bullhorn"></i>
+                                <span>التسويق</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-left arrow-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="#">الحملات التسويقية</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Sales Channels -->
+                    <li class="nav-item has-submenu">
+                        <a href="javascript:void(0)" class="nav-link toggle-submenu">
+                            <div class="link-content">
+                                <i class="fa-solid fa-store"></i>
+                                <span>قنوات البيع</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-left arrow-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/pos">نقاط البيع (POS)</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Settings -->
+                    <li class="nav-item has-submenu">
+                        <a href="javascript:void(0)" class="nav-link toggle-submenu">
+                            <div class="link-content">
+                                <i class="fa-solid fa-cog"></i>
+                                <span>الإعدادات</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-left arrow-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/settings">الإعدادات العامة</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#"><i class="fa-solid fa-headset"></i> <span>مركز المساعدة</span></a>
+            </div>
+        </aside>
+
+        <div class="main-wrapper">
+            <header class="top-header">
+                <div class="header-right" style="display: flex; align-items: center; gap: 15px;">
+                    <!-- Sidebar Toggle Button for Mobile -->
+                    <button class="menu-toggle-btn" id="openSidebar"
+                        style="font-size: 1.4rem; background: none; border: none; cursor: pointer; color: #64748b;"><i
+                            class="fa-solid fa-bars"></i></button>
+
+                    <a href="/orders"
+                        style="display:flex;align-items:center;gap:5px;text-decoration:none;color:#64748b"><i
+                            class="fa fa-arrow-right"></i> عودة للقائمة</a>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div class="page-header">
+                    <div>
+                        <h1 style="margin:0">طلب رقم <span id="orderIdDisplay">#...</span></h1>
+                        <span id="orderDateDisplay" style="color:#64748b; font-size: 0.9rem;"></span>
+                    </div>
+                    <div style="display:flex; gap:10px">
+                        <select id="statusSelect" onchange="updateStatus()"
+                            style="padding:10px; border-radius:6px; border:1px solid #cbd5e1">
+                            <option value="new">جديد</option>
+                            <option value="processing">جاري التجهيز</option>
+                            <option value="ready">جاهز</option>
+                            <option value="shipping">جاري التوصيل</option>
+                            <option value="completed">مكتمل</option>
+                            <option value="cancelled">ملغي</option>
+                        </select>
+                        <button onclick="window.print()" class="action-btn secondary"><i class="fa fa-print"></i>
+                            طباعة</button>
+                    </div>
+                </div>
+
+                <div class="details-grid">
+                    <!-- Right: Items & Totals -->
+                    <div class="card">
+                        <h3>المنتجات</h3>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>المنتج</th>
+                                    <th>الكمية</th>
+                                    <th>السعر</th>
+                                    <th>الإجمالي</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsBody"></tbody>
+                        </table>
+
+                        <div style="margin-top: 30px; max-width: 300px; margin-right: auto;">
+                            <div class="total-row"><span>المجموع الفرعي:</span><span id="subtotalVal">0.00</span></div>
+                            <div class="total-row"><span>اضريبة (15%):</span><span id="taxVal">0.00</span></div>
+                            <div class="total-row"><span>الشحن:</span><span id="shippingVal">0.00</span></div>
+                            <div class="total-row final"><span>الإجمالي الكلي:</span><span id="totalVal">0.00 SAR</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Left: Customer Info -->
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>بيانات العميل</h3>
+                            <div class="info-group">
+                                <label>الاسم</label>
+                                <div class="value" id="custName">...</div>
+                            </div>
+                            <div class="info-group">
+                                <label>Email</label>
+                                <div class="value" id="custEmail">...</div>
+                            </div>
+                            <div class="info-group">
+                                <label>الهاتف</label>
+                                <div class="value" id="custPhone">...</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>تفاصيل الدفع والشحن</h3>
+                            <div class="info-group">
+                                <label>حالة الدفع</label>
+                                <div class="value" id="payStatus">...</div>
+                            </div>
+                            <div class="info-group">
+                                <label>طريقة الدفع</label>
+                                <div class="value" id="payMethod">...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const orderId = "{{ order_id }}";
+
+        // Sidebar Fixes
+        // Sidebar Mobile Toggle
+        const openSidebarBtn = document.getElementById('openSidebar');
+        if (openSidebarBtn) {
+            openSidebarBtn.addEventListener('click', function () {
+                document.querySelector('.sidebar').classList.toggle('open');
+                document.querySelector('.main-wrapper').classList.toggle('sidebar-open');
+            });
+        }
+
+        const closeSidebarBtn = document.querySelector('.close-sidebar-btn');
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', function () {
+                document.querySelector('.sidebar').classList.remove('open');
+                document.querySelector('.main-wrapper').classList.remove('sidebar-open');
+            });
+        }
+
+        document.querySelectorAll('.toggle-submenu').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const parent = item.parentElement;
+                parent.classList.toggle('open');
+            });
+        });
+
+        async function loadDetails() {
+            try {
+                const res = await fetch(`/api/orders/${orderId}/details`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+                });
+                if (!res.ok) throw new Error("Load failed");
+
+                const data = await res.json();
+
+                document.getElementById('orderIdDisplay').innerText = '#' + data.id;
+                document.getElementById('orderDateDisplay').innerText = data.date.replace('T', ' ').substring(0, 16);
+                document.getElementById('statusSelect').value = data.status;
+
+                document.getElementById('custName').innerText = data.customer.name;
+                document.getElementById('custEmail').innerText = data.customer.email;
+                document.getElementById('custPhone').innerText = data.customer.phone || '-';
+
+                document.getElementById('payStatus').innerText = data.payment_status;
+                document.getElementById('payMethod').innerText = data.payment_method;
+
+                const tbody = document.getElementById('itemsBody');
+                tbody.innerHTML = '';
+                data.items.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <div style="font-weight:bold">${item.name}</div>
+                                <div style="font-size:0.8rem;color:#64748b">${item.variant}</div>
+                            </td>
+                            <td>${item.qty}</td>
+                            <td>${item.price.toFixed(2)}</td>
+                            <td>${item.total.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('subtotalVal').innerText = data.subtotal.toFixed(2);
+                document.getElementById('taxVal').innerText = data.tax.toFixed(2);
+                document.getElementById('shippingVal').innerText = data.shipping.toFixed(2);
+                document.getElementById('totalVal').innerText = data.total.toFixed(2) + ' SAR';
+
+            } catch (e) {
+                notifier.showToast("Error loading order: " + e.message, "error");
+            }
+        }
+
+        async function updateStatus() {
+            const newStatus = document.getElementById('statusSelect').value;
+            const res = await fetch(`/api/orders/${orderId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (res.ok) {
+                // Flash success, maybe standard toast later
+            } else {
+                notifier.showToast("Failed to update status", "error");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDetails);
+    </script>
+</body>
+
+</html>

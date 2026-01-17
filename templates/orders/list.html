@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}قائمة الطلبات | منصة التاجر{% endblock %}
+
+{% block styles %}
+<style>
+    /* Orders Specific Styles */
+    .filters-bar {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    .input-style {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-family: 'Tajawal';
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .input-style:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .action-btn {
+        background: #10b981;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+        filter: brightness(0.95);
+    }
+
+    .action-btn.secondary {
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+    }
+
+    .action-btn.secondary:hover {
+        background: #f8fafc;
+    }
+
+    /* Modal / Wizard Override Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        /* Flex when open */
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        /* Higher than notifications (9999) */
+        backdrop-filter: blur(4px);
+    }
+
+    .wizard-modal {
+        background: white;
+        width: 900px;
+        /* Wide modal for POS-like feel */
+        max-width: 95%;
+        height: 85vh;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .wizard-header {
+        padding: 20px 25px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8fafc;
+    }
+
+    .wizard-steps {
+        display: flex;
+        gap: 10px;
+        /* Simple step indicator */
+    }
+
+    .step-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #cbd5e1;
+    }
+
+    .step-dot.active {
+        background: #10b981;
+    }
+
+    .wizard-content {
+        flex: 1;
+        padding: 0;
+        overflow-y: auto;
+        display: flex;
+    }
+
+    .wizard-step-panel {
+        min-width: 100%;
+        transition: transform 0.3s ease;
+        padding: 30px;
+        /* Step logic controlled via JS usually, or simplistic show/hide */
+        display: none;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .wizard-step-panel.active {
+        display: flex;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .wizard-footer {
+        padding: 20px 25px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        background: white;
+    }
+
+    /* POS/Product Search Styles inside Wizard */
+    .product-search-container {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .search-results-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 10;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+
+    .search-item {
+        padding: 10px;
+        display: flex;
+        gap: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .search-item:hover {
+        background: #f8fafc;
+    }
+
+    /* Cart Mini Table */
+    .cart-table th,
+    .cart-table td {
+        padding: 10px;
+        text-align: right;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    /* Pagination Styles */
+    .pagination {
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .page-btn {
+        padding: 5px 12px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .page-btn.active {
+        background: #10b981;
+        color: white;
+        border-color: #10b981;
+    }
+</style>
+{% endblock %}
+
+{% block page_title %}إدارة الطلبات{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h1>جميع الطلبات</h1>
+        <p style="color:#64748b; margin-top:5px">إدارة ومتابعة جميع طلبات المتجر من مكان واحد</p>
+    </div>
+    <div class="actions">
+        <a href="/api/orders/export/excel" class="action-btn secondary"><i class="fa-solid fa-file-excel"></i> تصدير
+            Excel</a>
+        <button class="action-btn" onclick="openWizard()"><i class="fa-solid fa-plus"></i> إنشاء طلب جديد</button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+    <div class="filter-group" style="flex: 2;">
+        <label>بحث ذكي</label>
+        <input type="text" id="searchInput" class="input-style"
+            placeholder="ابحث برقم الطلب، اسم العميل، رقم الجوال...">
+    </div>
+    <div class="filter-group">
+        <label>حالة الطلب</label>
+        <select id="statusFilter" class="input-style" onchange="OrdersManager.loadOrders()">
+            <option value="all">الكل</option>
+            <option value="new">جديد</option>
+            <option value="processing">جاري التجهيز</option>
+            <option value="ready">جاهز</option>
+            <option value="shipping">جاري التوصيل</option>
+            <option value="completed">مكتمل</option>
+            <option value="cancelled">ملغي</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>التاريخ من</label>
+        <input type="date" id="dateFrom" class="input-style" onchange="OrdersManager.loadOrders()">
+    </div>
+    <div class="filter-group">
+        <label>التاريخ إلى</label>
+        <input type="date" id="dateTo" class="input-style" onchange="OrdersManager.loadOrders()">
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="card table-card">
+    <div class="table-responsive">
+        <table id="ordersTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">
+                        <input type="checkbox" id="selectAll" onchange="OrdersManager.toggleSelectAll()">
+                    </th>
+                    <th>رقم الطلب</th>
+                    <th>العميل</th>
+                    <th>التاريخ</th>
+                    <th>الحالة</th>
+                    <th>الدفع</th>
+                    <th>عدد العناصر</th>
+                    <th>الإجمالي</th>
+                    <th style="width: 80px;">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+                <!-- Data Injected Here -->
+            </tbody>
+        </table>
+    </div>
+    <!-- Pagination -->
+    <div id="pagination" class="pagination"></div>
+</div>
+
+<!-- Create Order Wizard Modal -->
+<div class="modal-overlay" id="wizardModal">
+    <div class="wizard-modal">
+        <div class="wizard-header">
+            <h3>إنشاء طلب جديد (مسودة)</h3>
+            <div class="wizard-steps">
+                <div class="step-dot active" id="dot1"></div>
+                <div class="step-dot" id="dot2"></div>
+                <div class="step-dot" id="dot3"></div>
+            </div>
+            <button onclick="closeWizard()"
+                style="background:none;border:none;font-size:1.2rem;cursor:pointer">&times;</button>
+        </div>
+
+        <!-- Steps Container -->
+        <div class="wizard-content">
+
+            <!-- STEP 1: Products -->
+            <div class="wizard-step-panel active" id="step1">
+                <h4>1. إضافة المنتجات</h4>
+                <div class="product-search-container">
+                    <input type="text" id="productSearch" class="input-style"
+                        placeholder="ابحث عن منتج لإضافته (اسم أو SKU)...">
+                    <div class="search-results-dropdown" id="searchResults"></div>
+                </div>
+
+                <div style="flex:1; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                    <table class="cart-table">
+                        <thead style="background:#f8fafc">
+                            <tr>
+                                <th>المنتج</th>
+                                <th>السعر</th>
+                                <th style="width:100px">الكمية</th>
+                                <th>المجموع</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartItemsBody">
+                            <!-- Cart Items -->
+                        </tbody>
+                    </table>
+                    <div id="emptyCartMsg" style="text-align:center; padding:30px; color:#94a3b8">السلة فارغة</div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Customer -->
+            <div class="wizard-step-panel" id="step2">
+                <h4>2. بيانات العميل</h4>
+                <div style="background:#f1f5f9; padding:20px; border-radius:8px;">
+                    <div style="margin-bottom:15px">
+                        <label>البحث عن عميل مسجل</label>
+                        <input type="text" id="customerSearch" class="input-style"
+                            placeholder="بحث بالاسم أو الجوال...">
+                    </div>
+                    <div style="text-align:center; margin:10px 0; color:#64748b">- أو -</div>
+                    <div>
+                        <label>إنشاء عميل سريع (Guest)</label>
+                        <input type="text" id="guestName" class="input-style" placeholder="الاسم الكامل"
+                            style="margin-bottom:10px">
+                        <input type="text" id="guestPhone" class="input-style" placeholder="رقم الجوال (اختياري)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Review & Payment -->
+            <div class="wizard-step-panel" id="step3">
+                <h4>3. الملخص والدفع</h4>
+                <div style="display:flex; gap:20px">
+                    <div style="flex:1">
+                        <label>طريقة الشحن</label>
+                        <div style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px">
+                            <label><input type="radio" name="shipping" value="standard" checked> شحن قياسي (يتم
+                                حسابه تلقائياً)</label>
+                        </div>
+
+                        <label style="margin-top:10px; display:block">طريقة الدفع</label>
+                        <select id="paymentMethod" class="input-style">
+                            <option value="cod">الدفع عند الاستلام</option>
+                            <option value="transfer">تحويل بنكي</option>
+                            <option value="card">بطاقة ائتمان (رابط)</option>
+                        </select>
+                    </div>
+                    <div style="flex:1; background:#f8fafc; padding:20px; border-radius:8px">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                            <span>المجموع الفرعي:</span>
+                            <span id="summSubtotal">0.00</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                            <span>الشحن:</span>
+                            <span id="summShipping">0.00</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                            <span>الضريبة (15%):</span>
+                            <span id="summTax">0.00</span>
+                        </div>
+                        <div style="border-top:1px solid #cbd5e1; margin:10px 0"></div>
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem">
+                            <span>الإجمالي النهائي:</span>
+                            <span id="summTotal">0.00 SAR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="wizard-footer">
+            <button class="action-btn secondary" id="prevBtn" onclick="Wizard.prevStep()"
+                style="display:none">السابق</button>
+            <div style="flex:1"></div> <!-- Spacer -->
+            <button class="action-btn" id="nextBtn" onclick="Wizard.nextStep()">التالي: العميل</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ url_for('static', path='js/orders.js') }}"></script>
+<script>
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        OrdersManager.init();
+
+        // Check URL for create param
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('create') === 'true') {
+            // Remove param from URL without reload
+            window.history.replaceState({}, document.title, window.location.pathname);
+            openWizard();
+        }
+    });
+
+    // Modal Helpers
+    function openWizard() {
+        document.getElementById('wizardModal').style.display = 'flex';
+        Wizard.reset();
+    }
+    function closeWizard() {
+        document.getElementById('wizardModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

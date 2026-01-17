@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات التنبيهات التلقائية | منصة التاجر{% endblock %}
+
+{% block page_title %}الإعدادات{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-auto">
+        <a href="/customers/stock-notifications" class="btn btn-outline-secondary rounded-circle">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="col">
+        <h5 class="mb-1">إعدادات التنبيهات التلقائية</h5>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary px-4" onclick="saveSettings()">حفظ</button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-12">
+                <label class="form-label text-muted small ms-2">بعد</label>
+                <div class="d-flex align-items-center mb-1">
+                    <div class="bg-light p-2 rounded flex-grow-1 text-center text-muted" style="max-width: 60px;">دقائق
+                    </div>
+                    <input type="number" class="form-control me-2" id="delayDuration" value="10">
+                </div>
+                <div class="text-end text-muted small">منذ إعادة توفر المنتج</div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <label class="form-label fw-bold d-block mb-3">إضافة عرض</label>
+                <div class="d-flex gap-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="offerType" id="offerNone" checked
+                            onclick="toggleOffer(false)">
+                        <label class="form-check-label" for="offerNone">بدون عرض</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="offerType" id="offerCode"
+                            onclick="toggleOffer(true)">
+                        <label class="form-check-label" for="offerCode">كود الخصم</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <div class="row g-4">
+            <!-- Arabic Template -->
+            <div class="col-12">
+                <label class="form-label text-muted small">العنوان (العربية)</label>
+                <input type="text" class="form-control mb-1" id="emailSubjectAr" dir="rtl">
+                <div class="text-end text-muted small">عدد الأحرف <span id="countSubjAr">0</span> / 160</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label text-muted small">الرسالة (العربية)</label>
+                <textarea class="form-control mb-1" rows="3" id="emailBodyAr" dir="rtl"></textarea>
+                <div class="text-end text-muted small">عدد الأحرف <span id="countBodyAr">0</span> / 160</div>
+            </div>
+
+            <!-- English Template -->
+            <div class="col-12">
+                <label class="form-label text-muted small">العنوان (الإنجليزية)</label>
+                <input type="text" class="form-control mb-1" id="emailSubjectEn" dir="ltr">
+                <div class="text-end text-muted small">عدد الأحرف <span id="countSubjEn">0</span> / 48</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label text-muted small">الرسالة (الإنجليزية)</label>
+                <textarea class="form-control mb-1" rows="3" id="emailBodyEn" dir="ltr"></textarea>
+                <div class="text-end text-muted small">عدد الأحرف <span id="countBodyEn">0</span> / 94</div>
+            </div>
+
+            <!-- Tags -->
+            <div class="col-12">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-light border rounded-pill text-muted small">اسم العميل</button>
+                    <button class="btn btn-sm btn-light border rounded-pill text-muted small">اسم المنتج</button>
+                    <button class="btn btn-sm btn-light border rounded-pill text-muted small">رابط المنتج</button>
+                    <span class="text-muted small align-self-center">:القيم المقترحة</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSettings();
+    });
+
+    async function loadSettings() {
+        try {
+            const response = await fetch('/api/stock-notifications/settings');
+            const data = await response.json();
+
+            document.getElementById('delayDuration').value = data.delay_duration || 0;
+            document.getElementById('emailSubjectAr').value = data.email_subject_ar || '';
+            document.getElementById('emailBodyAr').value = data.email_body_ar || '';
+            document.getElementById('emailSubjectEn').value = data.email_subject_en || '';
+            document.getElementById('emailBodyEn').value = data.email_body_en || '';
+
+            if (data.show_discount_code) {
+                document.getElementById('offerCode').checked = true;
+            } else {
+                document.getElementById('offerNone').checked = true;
+            }
+
+            updateCounts();
+
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        }
+    }
+
+    async function saveSettings() {
+        const data = {
+            delay_duration: parseInt(document.getElementById('delayDuration').value),
+            email_subject_ar: document.getElementById('emailSubjectAr').value,
+            email_body_ar: document.getElementById('emailBodyAr').value,
+            email_subject_en: document.getElementById('emailSubjectEn').value,
+            email_body_en: document.getElementById('emailBodyEn').value,
+            show_discount_code: document.getElementById('offerCode').checked
+        };
+
+        try {
+            const response = await fetch('/api/stock-notifications/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                notifier.showToast('تم حفظ الإعدادات بنجاح', 'success');
+            } else {
+                notifier.showToast('فشل الحفظ', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            notifier.showToast('حدث خطأ', 'error');
+        }
+    }
+
+    function toggleOffer(show) {
+        // UI logic for offer details (not fully implemented in backend yet)
+    }
+
+    const inputs = ['emailSubjectAr', 'emailBodyAr', 'emailSubjectEn', 'emailBodyEn'];
+    inputs.forEach(id => {
+        document.getElementById(id).addEventListener('input', updateCounts);
+    });
+
+    function updateCounts() {
+        document.getElementById('countSubjAr').textContent = document.getElementById('emailSubjectAr').value.length;
+        document.getElementById('countBodyAr').textContent = document.getElementById('emailBodyAr').value.length;
+        document.getElementById('countSubjEn').textContent = document.getElementById('emailSubjectEn').value.length;
+        document.getElementById('countBodyEn').textContent = document.getElementById('emailBodyEn').value.length;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}خيارات صفحة إتمام عملية الشراء | منصة التاجر{% endblock %}
+
+{% block page_title %}خيارات صفحة إتمام عملية الشراء{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/settings" class="btn btn-light rounded-circle shadow-sm"
+                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">خيارات صفحة إتمام عملية الشراء</h4>
+        </div>
+        <button class="btn btn-primary px-4" onclick="saveSettings()" id="saveBtn">حفظ</button>
+    </div>
+</div>
+
+<div class="row g-4" dir="rtl">
+    <!-- Checkout configuration card -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="mb-4">
+                <h5 class="fw-bold mb-1">إعدادات صفحة إتمام عملية الشراء</h5>
+                <p class="text-muted small">خصص إعدادات صفحة إتمام عملية الشراء لتوفير تجربة شراء سلسة لعملائك</p>
+            </div>
+
+            <!-- Address Collection -->
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">تحديد عنوان العميل</h6>
+                        <p class="text-muted small mb-0">اختر كيفية الحصول على عناوين العملاء في صفحة إتمام عملية الشراء
+                            بمتجرك</p>
+                    </div>
+                    <div>
+                        <select class="form-select form-select-sm" id="inputs_address_collection_method"
+                            style="min-width: 150px;">
+                            <option value="map">خريطة</option>
+                            <option value="manual">يدوي</option>
+                            <option value="google_autocomplete">إكمال تلقائي (Google)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4 border-light">
+
+            <!-- Apple Pay Quick -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">تفعيل الدفع السريع باستخدام Apple Pay</h6>
+                    <p class="text-muted small mb-0">تفعيل الدفع السريع بزر واحد باستخدام Apple Pay من صفحة السلة أو
+                        المنتج</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_enable_apple_pay_quick">
+                </div>
+            </div>
+
+            <!-- SMS Login -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">تسجيل الدخول باستخدام رسائل SMS</h6>
+                    <p class="text-muted small mb-0">تمكين العملاء من تسجيل الدخول باستخدام الرسائل النصية (SMS)</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_enable_sms_login">
+                </div>
+            </div>
+
+            <!-- Email Login -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <h6 class="fw-bold mb-1">تسجيل الدخول باستخدام البريد الإلكتروني</h6>
+                        <p class="text-muted small mb-0">تمكين العملاء من تسجيل الدخول عبر البريد الإلكتروني</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="switch_enable_email_login"
+                            onchange="toggleEmailMandatory()">
+                    </div>
+                </div>
+                <div class="me-4 pe-4" id="emailMandatoryContainer">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="switch_is_email_mandatory">
+                        <label class="form-check-label small" for="switch_is_email_mandatory">
+                            جعل حقل البريد الإلكتروني إلزامي
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WhatsApp Login -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">تسجيل الدخول باستخدام واتساب</h6>
+                    <p class="text-muted small mb-0">تمكين العملاء من تسجيل الدخول عبر واتساب</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_enable_whatsapp_login">
+                </div>
+            </div>
+
+            <!-- Apple Pay Browser Notification -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">تفعيل إشعارات Apple Pay في جميع المتصفحات</h6>
+                    <p class="text-muted small mb-0">عرض إشعار لتوجيه المستخدم إلى متصفح Safari عند اختيار الدفع
+                        باستخدام Apple Pay من متصفح آخر</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_show_apple_pay_on_other_browsers">
+                </div>
+            </div>
+
+            <!-- Stacked Discounts -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">تفعيل استخدام عدة خصومات</h6>
+                    <p class="text-muted small mb-0">هذه الميزة تتيح للعميل استخدام أكثر من خصم لكل سلة</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_enable_stacked_discounts">
+                </div>
+            </div>
+
+            <!-- Guest Checkout -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">شراء كزائر</h6>
+                    <p class="text-muted small mb-0">تمكين العملاء من الشراء دون تسجيل دخول</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_allow_guest_checkout">
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="mb-4">
+                <h6 class="fw-bold mb-3">خيارات الدفع المتاحة</h6>
+                <div class="d-flex gap-4">
+                    <div class="form-check">
+                        <input class="form-check-input payment-method" type="checkbox" value="online" id="pm_online">
+                        <label class="form-check-label" for="pm_online">الدفع الإلكتروني</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input payment-method" type="checkbox" value="cod" id="pm_cod">
+                        <label class="form-check-label" for="pm_cod">الدفع عند الاستلام</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input payment-method" type="checkbox" value="bank_transfer"
+                            id="pm_bank_transfer">
+                        <label class="form-check-label" for="pm_bank_transfer">التحويل البنكي</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Notes -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">ملاحظات العميل</h6>
+                    <p class="text-muted small mb-0">تمكين العملاء من إدخال ملاحظاتهم قبل إتمام الطلب</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_enable_customer_notes">
+                </div>
+            </div>
+
+            <!-- One Step Checkout -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">تفعيل صفحة إتمام عملية الشراء من خطوة واحدة</h6>
+                    <p class="text-muted small mb-0">الدفع من صفحة واحدة يزيد من تجربة شراء أسرع وترفع من احتمالية إتمام
+                        الطلب</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_enable_one_step_checkout">
+                </div>
+            </div>
+
+            <!-- B2B Checkout -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">السماح للعملاء بتغيير نوع العميل إلى شركة</h6>
+                    <p class="text-muted small mb-0">السماح للعملاء بتغيير نوع العميل إلى شركة وإدخال اسم الشركة، رقم
+                        التسجيل الضريبي و رقم السجل التجاري بشكل مباشر من المتجر.</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_allow_b2b_checkout">
+                </div>
+            </div>
+
+            <!-- Pickup Items -->
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold mb-1">عرض المنتجات المتاحة للاستلام في صفحة إتمام عملية الشراء</h6>
+                    <p class="text-muted small mb-0">السماح للعملاء بمعرفة المنتجات المتاحة للاستلام أثناء الدفع</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_show_pickup_items">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', loadSettings);
+
+    function toggleEmailMandatory() {
+        const emailEnabled = document.getElementById('switch_enable_email_login').checked;
+        const mandatorySwitch = document.getElementById('switch_is_email_mandatory');
+        mandatorySwitch.disabled = !emailEnabled;
+        if (!emailEnabled) mandatorySwitch.checked = false;
+    }
+
+    async function loadSettings() {
+        try {
+            const res = await fetch('/api/settings/checkout');
+            const config = await res.json();
+
+            // Map API response to elements
+            const mappings = [
+                'enable_apple_pay_quick', 'enable_sms_login', 'enable_email_login',
+                'is_email_mandatory', 'enable_whatsapp_login', 'show_apple_pay_on_other_browsers',
+                'enable_stacked_discounts', 'allow_guest_checkout',
+                'enable_customer_notes', 'enable_one_step_checkout', 'allow_b2b_checkout',
+                'show_pickup_items'
+            ];
+
+            mappings.forEach(key => {
+                const el = document.getElementById(`switch_${key}`);
+                if (el) el.checked = config[key];
+            });
+
+            const addressMethod = document.getElementById('inputs_address_collection_method');
+            if (addressMethod) addressMethod.value = config.address_collection_method || 'map';
+
+            // Payment Methods
+            const methods = config.enabled_payment_methods || [];
+            document.querySelectorAll('.payment-method').forEach(cb => {
+                cb.checked = methods.includes(cb.value);
+            });
+
+            toggleEmailMandatory();
+        } catch (e) {
+            console.error(e);
+            notifier.showToast('فشل تحميل الإعدادات', 'error');
+        }
+    }
+
+    async function saveSettings() {
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.textContent = 'جاري الحفظ...';
+
+        const data = {};
+
+        // Booleans
+        const mappings = [
+            'enable_apple_pay_quick', 'enable_sms_login', 'enable_email_login',
+            'is_email_mandatory', 'enable_whatsapp_login', 'show_apple_pay_on_other_browsers',
+            'enable_stacked_discounts', 'allow_guest_checkout',
+            'enable_customer_notes', 'enable_one_step_checkout', 'allow_b2b_checkout',
+            'show_pickup_items'
+        ];
+        mappings.forEach(key => {
+            const el = document.getElementById(`switch_${key}`);
+            if (el) data[key] = el.checked;
+        });
+
+        // Enums
+        data.address_collection_method = document.getElementById('inputs_address_collection_method').value;
+
+        // Arrays
+        const methods = [];
+        document.querySelectorAll('.payment-method:checked').forEach(cb => methods.push(cb.value));
+        data.enabled_payment_methods = methods;
+
+        try {
+            const res = await fetch('/api/settings/checkout', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                notifier.showFlashToast('تم حفظ الإعدادات بنجاح', 'success');
+                window.location.reload();
+            } else {
+                notifier.showToast('حدث خطأ أثناء الحفظ', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            notifier.showToast('تعذر الاتصال بالخادم', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'حفظ';
+        }
+    }
+</script>
+{% endblock %}

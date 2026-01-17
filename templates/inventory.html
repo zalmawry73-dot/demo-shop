@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة أولويات المستودعات</title>
+    <!-- SortableJS Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+
+        .warehouse-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .warehouse-item {
+            background: #fff;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: grab;
+            border-right: 4px solid #10b981;
+        }
+
+        .warehouse-item:active {
+            cursor: grabbing;
+        }
+
+        .info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .drag-handle {
+            color: #94a3b8;
+            font-size: 1.2rem;
+        }
+
+        .priority-badge {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        .save-btn {
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .save-btn:hover {
+            background: #1e293b;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>أولوية سحب المخزون</h2>
+            <a href="/api/inventory/export" class="save-btn"
+                style="width: auto; margin:0; background: #10b981; text-decoration: none; padding: 10px 20px; font-size: 0.9rem;">
+                <i class="fa-solid fa-file-csv"></i> تصدير جرد (CSV)
+            </a>
+        </div>
+
+        <p style="color: #64748b; margin-bottom: 20px;">قم بسحب وإفلات المستودعات لترتيب الأولوية عند تنفيذ الطلبات
+            الآلية.</p>
+
+        <ul class="warehouse-list" id="warehouseList">
+            <!-- Loaded via JS -->
+            <li style="text-align: center; color: #94a3b8;">جارِ التحميل...</li>
+        </ul>
+
+        <button class="save-btn" onclick="saveOrder()">حفظ الترتيب الجديد</button>
+    </div>
+
+    <script>
+        let sortableInstance;
+
+        // Fix: JS definition of function
+        loadWarehouses = async function () {
+            try {
+                const response = await fetch('/api/warehouses');
+                const warehouses = await response.json();
+
+                const listEl = document.getElementById('warehouseList');
+                listEl.innerHTML = '';
+
+                warehouses.forEach((wh, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'warehouse-item';
+                    li.setAttribute('data-id', wh.id);
+                    li.innerHTML = `
+                    <div class="info">
+                        <i class="fa-solid fa-grip-vertical drag-handle"></i>
+                        <span style="font-weight: bold;">${wh.name}</span>
+                        <span class="priority-badge">#${index + 1}</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span style="font-size: 0.8rem; color: #64748b;">${wh.location}</span>
+                        <i class="fa-solid fa-warehouse" style="color: #cbd5e1;"></i>
+                    </div>
+                `;
+                    listEl.appendChild(li);
+                });
+
+                if (sortableInstance) sortableInstance.destroy();
+                sortableInstance = Sortable.create(listEl, {
+                    animation: 150,
+                    handle: '.warehouse-item',
+                    onEnd: function (evt) { updateBadges(); }
+                });
+
+            } catch (error) {
+                console.error('Error loading warehouses:', error);
+                document.getElementById('warehouseList').innerHTML = '<li style="color: red; text-align: center;">فشل التحميل. تأكد من تشغيل الخادم (main.py).</li>';
+            }
+        }
+
+        // Load on start
+        loadWarehouses();
+
+        function updateBadges() {
+            const items = document.querySelectorAll('.warehouse-item');
+            items.forEach((item, index) => {
+                item.querySelector('.priority-badge').textContent = '#' + (index + 1);
+            });
+        }
+
+        async function saveOrder() {
+            const order = sortableInstance.toArray(); // returns string array of data-ids
+            console.log("New Priority Order (IDs):", order);
+
+            try {
+                // Convert strings to INTs
+                const intOrder = order.map(id => parseInt(id));
+
+                const response = await fetch('/api/warehouses/priority', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order: intOrder })
+                });
+
+                if (response.ok) {
+                    notifier.showToast("تم حفظ ترتيب الأولوية بنجاح!", "success");
+                } else {
+                    notifier.showToast("حدث خطأ أثناء الحفظ.", "error");
+                }
+            } catch (e) {
+                console.error(e);
+                notifier.showToast("خطأ في الاتصال بالخادم.", "error");
+            }
+        }
+    </script>
+
+</body>
+
+</html>

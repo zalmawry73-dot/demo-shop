@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}خيارات المنتج | منصة التاجر{% endblock %}
+
+{% block page_title %}خيارات المنتج{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h1>خيارات المنتج</h1>
+        <p style="color:#64748b; margin-top:5px">إدارة السمات العامة للمنتجات (مثل الألوان، الأحجام)</p>
+    </div>
+    <div class="actions">
+        <button class="action-btn" onclick="window.location.href='/catalog/options/form'">
+            <i class="fa-solid fa-plus"></i> إضافة خيار جديد
+        </button>
+    </div>
+</div>
+
+<div class="card table-card">
+    <div class="table-responsive">
+        <table id="optionsTable">
+            <thead>
+                <tr>
+                    <th>اسم الخيار</th>
+                    <th>النوع</th>
+                    <th>القيم</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="optionsTableBody">
+                <!-- Data Injected Here -->
+            </tbody>
+        </table>
+    </div>
+    <div id="loadingState" style="text-align:center; padding: 40px; display:none;">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+        <p style="margin-top:10px">جاري التحميل...</p>
+    </div>
+    <div id="emptyState" style="text-align:center; padding: 40px; display:none;">
+        <i class="fa-solid fa-list fa-3x text-muted mb-3"></i>
+        <h3>لا توجد خيارات مضافة</h3>
+        <p class="text-muted">قم بإضافة خيارات مثل "اللون" أو "المقاس" لاستخدامها في المنتجات.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ url_for('static', path='js/options.js') }}?v=2"></script>
+{% endblock %}

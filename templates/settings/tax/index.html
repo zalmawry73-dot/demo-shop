@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الضريبة{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-6 d-flex align-items-center gap-3">
+        <a href="/settings" class="btn btn-light border btn-icon">
+            <i class="fas fa-arrow-right"></i>
+        </a>
+        <h3 class="mb-0 fw-bold">إعدادات الضريبة</h3>
+    </div>
+    <div class="col-6 text-end">
+        <a href="/settings/tax/create" class="btn btn-primary-theme px-4">
+            <i class="fas fa-plus me-2"></i> إضافة دولة
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+        <!-- Main VAT Toggle -->
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-4 border-bottom">
+            <div>
+                <h5 class="fw-bold mb-1">تفعيل ضريبة القيمة المضافة في المتجر</h5>
+            </div>
+            <div class="form-check form-switch custom-switch">
+                <input class="form-check-input" type="checkbox" id="isVatEnabled">
+            </div>
+        </div>
+
+        <!-- Conditional Options Container -->
+        <div id="vatOptionsContainer" style="display: none;">
+            <!-- Option 1 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">هل أسعار منتجاتك تشمل ضريبة القيمة المضافة؟</h6>
+                    <small class="text-muted">في حال اختيارك لهذا الخيار، ستكون مسؤولاً عن تضمين الضريبة ضمن أسعار
+                        المنتجات</small>
+                </div>
+                <div class="form-check form-switch custom-switch">
+                    <input class="form-check-input" type="checkbox" id="pricesIncludeVat">
+                </div>
+            </div>
+
+            <!-- Option 2 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">هل ترغب في تطبيق ضريبة القيمة المضافة على رسوم الشحن؟</h6>
+                </div>
+                <div class="form-check form-switch custom-switch">
+                    <input class="form-check-input" type="checkbox" id="applyVatToShipping">
+                </div>
+            </div>
+
+            <!-- Option 3 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h6 class="fw-bold mb-1">هل ترغب في عرض أسعار المنتجات في متجرك شاملة ضريبة القيمة المضافة؟</h6>
+                    <small class="text-muted">في حال إلغاء هذا الخيار، سيتم عرض السعر دون ضريبة عند إتمام الطلب</small>
+                </div>
+                <div class="form-check form-switch custom-switch">
+                    <input class="form-check-input" type="checkbox" id="displayPricesWithVat">
+                </div>
+            </div>
+        </div>
+
+        <!-- Default Tax Rate -->
+        <div class="mb-4 pt-4 border-top">
+            <label class="form-label fw-bold">نسبة الضريبة للدول الأخرى</label>
+            <div class="input-group" style="max-width: 200px;" dir="ltr">
+                <span class="input-group-text">%</span>
+                <input type="number" class="form-control text-center" id="defaultTaxRate" placeholder="0" min="0"
+                    step="0.01">
+            </div>
+        </div>
+
+        <!-- Disclaimer & Save -->
+        <div class="d-flex align-items-center justify-content-between mt-5">
+            <button class="btn btn-primary-theme px-5 py-2" id="saveTaxSettingsBtn" onclick="saveTaxSettings()">
+                حفظ
+            </button>
+            <span class="text-muted small">
+                بالضغط على حفظ، أُقر بأنني راجعت الأنظمة الضريبية المطبقة وتم تطبيقها حسب الأصول
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Countries Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">الدول التي تُطبق فيها الضريبة</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted">
+                    <tr>
+                        <th class="ps-4">الدولة</th>
+                        <th>الرقم الضريبي</th>
+                        <th>نسبة الضريبة</th>
+                        <th class="text-end pe-4">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="countriesTableBody">
+                    <!-- Dynamic Content -->
+                    <tr id="emptyStateRow">
+                        <td colspan="4" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="far fa-file-alt fa-3x mb-3 opacity-25"></i>
+                                <p>لا توجد بيانات حالياً، ستظهر هنا عند توفرها</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/settings_tax.js') }}?v=2"></script>
+{% endblock %}

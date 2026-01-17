@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}تفاصيل العميل | منصة التاجر{% endblock %}
+
+{% block page_title %}تفاصيل العميل{% endblock %}
+
+{% block styles %}
+<style>
+    .profile-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: #f0f2f5;
+        border-radius: 50%;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: #6c757d;
+    }
+
+    .profile-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .profile-meta {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .info-list {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #6c757d;
+    }
+
+    .info-value {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .stats-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+    }
+
+    .stats-icon {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: var(--accent-color);
+    }
+
+    .stats-value {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .stats-label {
+        font-size: 13px;
+        color: #6c757d;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: #fff;
+        border-radius: 8px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #dee2e6;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header with Back Button -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/customers" class="btn btn-light rounded-circle shadow-sm"
+            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <h1 class="h3 mb-0 fw-bold">تفاصيل العميل</h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Right Column: Profile Info -->
+    <div class="col-md-4 mb-4">
+        <div class="profile-card">
+            <div class="profile-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="profile-name">{{ customer.name }}</div>
+            <div class="profile-meta">
+                تاريخ الانضمام: {{ customer.created_at.strftime('%Y-%m-%d') }}
+            </div>
+
+            <div class="profile-actions">
+                <a href="/customers/{{ customer.id }}/edit" class="btn btn-primary w-100">
+                    <i class="fa-solid fa-pen"></i> تعديل
+                </a>
+            </div>
+
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-label">المتجر</span>
+                    <span class="info-value">متجر افتراضي</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">نوع العميل</span>
+                    <span class="info-value">{% if customer.customer_type == 'individual' %}فرد{% else %}شركة{% endif
+                        %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">الجوال</span>
+                    <span class="info-value" dir="ltr">{{ customer.mobile or '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">البريد الإلكتروني</span>
+                    <span class="info-value">{{ customer.email or '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">المدينة</span>
+                    <span class="info-value">{{ customer.city or '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">الدولة</span>
+                    <span class="info-value">{{ customer.country }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">الجنس</span>
+                    <span class="info-value">
+                        {% if customer.gender == 'male' %}ذكر
+                        {% elif customer.gender == 'female' %}أنثى
+                        {% else %}-{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Left Column: Stats & Orders -->
+    <div class="col-md-8">
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon"><i class="fa-solid fa-check-circle"></i></div>
+                    <div class="stats-value">{{ customer.total_orders }}</div>
+                    <div class="stats-label">الطلبات المكتملة</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon"><i class="fa-solid fa-shopping-cart"></i></div>
+                    <div class="stats-value">0</div>
+                    <div class="stats-label">الطلبات</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="stats-value">0</div>
+                    <div class="stats-label">متوسط قيمة الطلب</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stats-card">
+                    <div class="stats-icon"><i class="fa-solid fa-wallet"></i></div>
+                    <div class="stats-value">0</div>
+                    <div class="stats-label">إجمالي المصروفات</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card">
+            <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#all-orders" role="tab">الكل</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#new-orders" role="tab">جديد</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#processing" role="tab">جاري التجهيز</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#ready" role="tab">جاهز</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="all-orders" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">سجل الطلبات</h6>
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control form-control-sm" placeholder="بحث"
+                                    style="width: 200px;">
+                                <button class="btn btn-sm btn-outline-secondary"><i
+                                        class="fa-solid fa-filter"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fa-regular fa-comment-alt"></i></div>
+                            <h6>لا توجد بيانات حالياً، ستظهر هنا عند توفرها</h6>
+                        </div>
+                    </div>
+                    <!-- Other tabs placeholders -->
+                    <div class="tab-pane fade" id="new-orders" role="tabpanel">
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fa-regular fa-comment-alt"></i></div>
+                            <h6>لا توجد طلبات جديدة</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/customers/details.js"></script>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}خيارات الهدايا | منصة التاجر{% endblock %}
+
+{% block page_title %}خيارات الهدايا{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/settings" class="btn btn-light rounded-circle shadow-sm"
+                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">خيارات الهدايا</h4>
+        </div>
+        <button class="btn btn-primary px-4" onclick="saveSettings()" id="saveBtn">حفظ</button>
+    </div>
+</div>
+
+<div class="row justify-content-center" dir="rtl">
+    <div class="col-12 col-md-10">
+        <!-- Empty State (When Disabled) -->
+        <div id="disabledState" class="card border-0 shadow-sm rounded-4 p-5 text-center d-none">
+            <div class="mb-4">
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style="width: 80px; height: 80px;">
+                    <i class="fa-solid fa-gift text-primary fs-1"></i>
+                </div>
+                <h5 class="fw-bold">تفعيل خيارات الإهداء</h5>
+                <p class="text-muted">تتيح هذه الخاصية لعملائك إرسال الهدايا إلى أشخاص آخرين</p>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary px-5 py-2" onclick="enableGifting()">تفعيل</button>
+            </div>
+        </div>
+
+        <!-- Settings State (When Enabled) -->
+        <div id="enabledState" class="card border-0 shadow-sm rounded-4 p-4 d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                        style="width: 60px; height: 60px;">
+                        <i class="fa-solid fa-gift text-primary fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1">تخصيص رسائل الإهداء</h5>
+                    <p class="text-muted small mb-0">رسالة مخصصة يتم إرسالها إلى العميل عند تغيير حالة الطلب</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="switch_is_enabled" onchange="toggleStateUI()">
+                    <label class="form-check-label me-2">مفعّل</label>
+                </div>
+            </div>
+
+            <hr class="my-4 border-light">
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-1">السماح برسائل مخصصة</h6>
+                        <p class="text-muted small mb-0">السماح للعميل بكتابة رسالة إهداء خاصة</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="switch_enable_custom_message">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future options can go here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', loadSettings);
+
+    function toggleStateUI() {
+        const isEnabled = document.getElementById('switch_is_enabled').checked;
+        const disabledState = document.getElementById('disabledState');
+        const enabledState = document.getElementById('enabledState');
+        const saveBtn = document.getElementById('saveBtn');
+
+        if (isEnabled) {
+            disabledState.classList.add('d-none');
+            enabledState.classList.remove('d-none');
+            saveBtn.style.display = 'block';
+        } else {
+            // If turning off from enabled state, show disabled state immediately? 
+            // Or keep enabled state visible but switch off?
+            // Based on UX, usually we show appropriate state. 
+            // If user unchecks toggle in enabled state, let's just keep it there so they can save "Disabled".
+
+            // However, for the initial load logic:
+        }
+    }
+
+    // Explicit function for the "Activate" button in empty state
+    function enableGifting() {
+        document.getElementById('switch_is_enabled').checked = true;
+        document.getElementById('disabledState').classList.add('d-none');
+        document.getElementById('enabledState').classList.remove('d-none');
+        document.getElementById('saveBtn').style.display = 'block';
+    }
+
+    async function loadSettings() {
+        try {
+            const res = await fetch('/api/settings/gifting');
+            const config = await res.json();
+
+            const isEnabled = config.is_enabled;
+            document.getElementById('switch_is_enabled').checked = isEnabled;
+            document.getElementById('switch_enable_custom_message').checked = config.enable_custom_message;
+
+            const disabledState = document.getElementById('disabledState');
+            const enabledState = document.getElementById('enabledState');
+            const saveBtn = document.getElementById('saveBtn');
+
+            if (isEnabled) {
+                disabledState.classList.add('d-none');
+                enabledState.classList.remove('d-none');
+                saveBtn.style.display = 'block';
+            } else {
+                disabledState.classList.remove('d-none');
+                enabledState.classList.add('d-none');
+                saveBtn.style.display = 'none'; // Hide save button in empty state
+            }
+
+        } catch (e) {
+            console.error(e);
+            notifier.showToast('فشل تحميل الإعدادات', 'error');
+        }
+    }
+
+    async function saveSettings() {
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.textContent = 'جاري الحفظ...';
+
+        const data = {
+            is_enabled: document.getElementById('switch_is_enabled').checked,
+            enable_custom_message: document.getElementById('switch_enable_custom_message').checked
+        };
+
+        try {
+            const res = await fetch('/api/settings/gifting', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                notifier.showFlashToast('تم حفظ الإعدادات بنجاح', 'success');
+                window.location.reload();
+            } else {
+                notifier.showToast('حدث خطأ أثناء الحفظ', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            notifier.showToast('تعذر الاتصال بالخادم', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'حفظ';
+        }
+    }
+</script>
+{% endblock %}

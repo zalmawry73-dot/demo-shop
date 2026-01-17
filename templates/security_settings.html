@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الأمان | منصة التاجر{% endblock %}
+
+{% block page_title %}إعدادات الأمان{% endblock %}
+
+{% block styles %}
+<style>
+    .security-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: box-shadow 0.2s;
+    }
+
+    .security-card:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .card-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+
+    .card-description {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Toggle Switch */
+    .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+        cursor: pointer;
+    }
+
+    /* Radio Selection */
+    .option-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .option-card {
+        flex: 1;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .option-card:hover {
+        border-color: #818cf8;
+        background-color: #f5f3ff;
+    }
+
+    .option-card.selected {
+        border-color: #6366f1;
+        background-color: #eef2ff;
+        color: #4338ca;
+    }
+
+    .option-card input {
+        display: none;
+    }
+
+    .option-icon {
+        font-size: 1.25rem;
+    }
+
+    .btn-danger-soft {
+        color: #dc2626;
+        background-color: #fee2e2;
+        border-color: transparent;
+    }
+
+    .btn-danger-soft:hover {
+        background-color: #fecaca;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/settings" class="btn btn-light rounded-circle shadow-sm"
+                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">إعدادات الأمان</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- 2FA Section -->
+        <div class="security-card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">تفعيل / إيقاف التحقق بخطوتين (2FA)</h3>
+                    <p class="card-description">عند تسجيل الدخول إلى لوحة التحكم لمالك المتجر أو أعضاء الفريق</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="toggle2FA" {% if settings.two_factor_enabled
+                        %}checked{% endif %}>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Protection -->
+        <div class="security-card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">حماية الملفات المصدرة بكلمة مرور <i class="fas fa-lock"></i></h3>
+                    <p class="card-description">عند التفعيل، سيتم تأمين جميع الملفات المصدرة بكلمة مرور يتم إنشاؤها
+                        تلقائياً وإرسالها إلى بريدك الإلكتروني المسجل.</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="toggleFileProtection" {% if
+                        settings.export_password_protection %}checked{% endif %}>
+                </div>
+            </div>
+        </div>
+
+        <!-- OTP Method -->
+        <div class="security-card">
+            <h3 class="card-title">اختر طريقتك المفضلة لاستلام رمز التحقق لمرة واحدة (OTP)</h3>
+            <div class="option-group">
+                <label class="option-card {% if settings.otp_method == 'sms' %}selected{% endif %}"
+                    onclick="selectOption(this, 'otp')">
+                    <input type="radio" name="otp_method" value="sms" {% if settings.otp_method=='sms' %}checked{% endif
+                        %}>
+                    <i class="fas fa-sms option-icon"></i>
+                    <span>عبر الرسائل النصية</span>
+                </label>
+                <label class="option-card {% if settings.otp_method == 'email' %}selected{% endif %}"
+                    onclick="selectOption(this, 'otp')">
+                    <input type="radio" name="otp_method" value="email" {% if settings.otp_method=='email' %}checked{%
+                        endif %}>
+                    <i class="fas fa-envelope option-icon"></i>
+                    <span>عبر البريد الإلكتروني</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Session Management -->
+        <div class="security-card">
+            <div class="card-header">
+                <h3 class="card-title">إدارة الجلسات</h3>
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+                <label class="option-card {% if settings.session_policy == 'normal' %}selected{% endif %}"
+                    onclick="selectOption(this, 'session')">
+                    <input type="radio" name="session_policy" value="normal" {% if settings.session_policy=='normal'
+                        %}checked{% endif %}>
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between">
+                            <strong>عادي</strong>
+                            <i
+                                class="far fa-circle-check {% if settings.session_policy == 'normal' %}text-primary{% else %}text-muted{% endif %} opacity-50"></i>
+                        </div>
+                        <small class="text-muted d-block">سيتم تسجيل خروج أي عضو غير نشط بعد 24 ساعة</small>
+                    </div>
+                </label>
+
+                <label class="option-card {% if settings.session_policy == 'medium' %}selected{% endif %}"
+                    onclick="selectOption(this, 'session')">
+                    <input type="radio" name="session_policy" value="medium" {% if settings.session_policy=='medium'
+                        %}checked{% endif %}>
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between">
+                            <strong>متوسط</strong>
+                            <i
+                                class="far fa-circle-check {% if settings.session_policy == 'medium' %}text-primary{% else %}text-muted{% endif %} opacity-50"></i>
+                        </div>
+                        <small class="text-muted d-block">سيتم تسجيل خروج أي عضو غير نشط بعد ساعتين</small>
+                    </div>
+                </label>
+
+                <label class="option-card {% if settings.session_policy == 'high' %}selected{% endif %}"
+                    onclick="selectOption(this, 'session')">
+                    <input type="radio" name="session_policy" value="high" {% if settings.session_policy=='high'
+                        %}checked{% endif %}>
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between">
+                            <strong>مرتفع</strong>
+                            <i
+                                class="far fa-circle-check {% if settings.session_policy == 'high' %}text-primary{% else %}text-muted{% endif %} opacity-50"></i>
+                        </div>
+                        <small class="text-muted d-block">سيتم تسجيل خروج أي عضو غير نشط بعد 30 دقيقة، ولن يتمكن من
+                            الدخول إلا من متصفح واحد فقط</small>
+                    </div>
+                </label>
+            </div>
+
+            <div class="mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-danger-soft w-100 py-2" onclick="logoutAll()">
+                    <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج من جميع الأجهزة
+                </button>
+            </div>
+        </div>
+
+        <!-- Save Button (Sticky or Bottom) -->
+        <div class="d-flex justify-content-end mb-5">
+            <button class="btn btn-primary px-5" onclick="saveSettings()">حفظ التغييرات</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function selectOption(element, group) {
+        // Remove selected from all in group
+        if (group === 'otp') {
+            document.querySelectorAll('input[name="otp_method"]').forEach(input => {
+                input.parentElement.classList.remove('selected');
+            });
+        } else if (group === 'session') {
+            document.querySelectorAll('input[name="session_policy"]').forEach(input => {
+                input.parentElement.classList.remove('selected');
+                // Also reset icon color if needed, but CSS handles card style
+            });
+        }
+
+        // Add to clicked
+        element.classList.add('selected');
+        const radio = element.querySelector('input[type="radio"]');
+        radio.checked = true;
+    }
+
+    async function saveSettings() {
+        const data = {
+            two_factor_enabled: document.getElementById('toggle2FA').checked,
+            export_password_protection: document.getElementById('toggleFileProtection').checked,
+            otp_method: document.querySelector('input[name="otp_method"]:checked').value,
+            session_policy: document.querySelector('input[name="session_policy"]:checked').value
+        };
+
+        try {
+            const response = await fetch('/api/account/security', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                notifier.showToast('تم حفظ الإعدادات بنجاح', 'success');
+            } else {
+                notifier.showToast('حدث خطأ أثناء الحفظ', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            notifier.showToast('حدث خطأ في الاتصال', 'error');
+        }
+    }
+
+    async function logoutAll() {
+        if (!await notifier.showConfirm('هل أنت متأكد من رغبتك في تسجيل الخروج من جميع الأجهزة الأخرى؟')) return;
+
+        try {
+            const response = await fetch('/api/account/logout-all', {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                notifier.showToast('تم تسجيل الخروج من جميع الأجهزة بنجاح. سيتم توجيهك لتسجيل الدخول مرة أخرى.', 'success');
+                window.location.href = '/login';
+            } else {
+                notifier.showToast('حدث خطأ أثناء العملية', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            notifier.showToast('حدث خطأ في الاتصال', 'error');
+        }
+    }
+</script>
+{% endblock %}

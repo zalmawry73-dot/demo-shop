@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة قيد الدفع{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" dir="rtl">
+    <style>
+        .condition-card-label {
+            transition: all 0.2s;
+        }
+
+        .condition-card-label:hover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+
+        .condition-card-label input:checked+.card-body {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            border-radius: calc(0.375rem - 1px);
+        }
+
+        .condition-card-label input:checked+.card-body i {
+            color: #0d6efd !important;
+        }
+
+        /* Make the card border blue when checked */
+        .condition-card-label:has(input:checked) {
+            border-color: #0d6efd;
+            background-color: #e7f1ff;
+        }
+    </style>
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center gap-3">
+                <a href="/settings/constraints" class="btn btn-light rounded-circle shadow-sm"
+                    style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-arrow-right text-secondary"></i>
+                </a>
+                <h4 class="mb-0 fw-bold text-dark">إدارة قيد الدفع</h4>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-primary px-4 rounded-3" id="saveConstraintBtn">
+                        <i class="fas fa-save list-icon"></i> حفظ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="constraintForm">
+        <!-- Hidden ID for edit mode -->
+        {% if constraint %}
+        <input type="hidden" id="constraintId" value="{{ constraint.id }}">
+        {% endif %}
+        <input type="hidden" id="constraintType" value="payment">
+
+        <!-- 1. Payment Methods -->
+        <div class="card card-custom mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="fw-bold">خيارات الدفع</h5>
+                <p class="text-muted small">حدد خيارات الدفع التي تريد ربطها بشروط معينة</p>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">اسم القيد</label>
+                        <input type="text" class="form-control" id="constraintName"
+                            placeholder="مثلاً: إخفاء الدفع عند الاستلام للمنتجات الرقمية"
+                            value="{{ constraint.name if constraint else '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">خيارات الدفع</label>
+                        <p class="text-muted small mb-1">قم بأختيار وسائل الدفع المطلوب اخفاءها</p>
+                        <select class="form-select" id="paymentMethods" multiple>
+                            <!-- Hardcoded Payment Methods for now -->
+                            <option value="cod">الدفع عند الاستلام</option>
+                            <option value="bank_transfer">تحويل بنكي</option>
+                            <option value="stripe">بطاقة ائتمان (Stripe)</option>
+                            <option value="tamara">تمارا</option>
+                            <option value="tabby">تابي</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="isActive" {% if not constraint or
+                        constraint.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="isActive">تفعيل صورة القيد</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Conditions -->
+        <div class="card card-custom mb-4">
+            <div
+                class="card-header bg-white border-bottom-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold">الشروط</h5>
+                    <p class="text-muted small">لتطبيق القيد يجب أن تتحقق جميع الشروط داخل سلة المشتريات.</p>
+                </div>
+                <button type="button" class="btn btn-dark btn-sm rounded-pill px-3" data-bs-toggle="modal"
+                    data-bs-target="#addConditionModal">
+                    <i class="fas fa-plus ms-1"></i> إضافة شرط
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="conditionsList" class="d-flex flex-column gap-3">
+                    <!-- Conditions will be rendered here dynamically -->
+                    <div class="text-center text-muted py-3" id="noConditionsMsg">
+                        لا توجد شروط مضافة
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Custom Error Message -->
+        <div class="card card-custom mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="fw-bold">رسالة خطأ مخصصة</h5>
+                <p class="text-muted small">إظهار رسالة خطأ مخصصة داخل صفحة إتمام الطلب تفيد بعدم توفر وسيلة الدفع.</p>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="isCustomErrorEnabled" {% if constraint and
+                        constraint.is_custom_error_enabled %}checked{% endif %}>
+                    <label class="form-check-label" for="isCustomErrorEnabled">تفعيل رسالة مخصصة</label>
+                </div>
+                <div class="mb-3 {% if not constraint or not constraint.is_custom_error_enabled %}d-none{% endif %}"
+                    id="customErrorContainer">
+                    <textarea class="form-control" id="customErrorMessage" rows="3"
+                        placeholder="عذراً، الدفع عند الاستلام غير متاح لهذا الطلب...">{{ constraint.custom_error_message if constraint and constraint.custom_error_message else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Reuse Modals from Shipping Form (Requires including or duplicating) -->
+    <!-- For simplicity, duplicating the Add Condition Modal Structure here but simplified or same -->
+    {% include "settings/constraints/partials/add_condition_modal.html" %}
+    {% include "settings/constraints/partials/product_selector_modal.html" %}
+    {% include "settings/constraints/partials/category_selector_modal.html" %}
+
+    {% endblock %}
+
+    {% block scripts %}
+    <script src="{{ url_for('static', path='js/settings_constraints.js') }}"></script>
+    <script>
+        // Clean up any potential global variables if needed, or leave empty
+    </script>
+    {% endblock %}

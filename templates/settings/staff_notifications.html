@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}إشعارات الموظفين{% endblock %}
+
+{% block styles %}
+<style>
+    /* Custom Toggle Switch (iOS Style) */
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        background-color: #e5e7eb;
+        border-color: #e5e7eb;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+        cursor: pointer;
+    }
+
+    .form-switch .form-check-input:checked {
+        background-color: #8D5DA7;
+        /* Zid Purple */
+        border-color: #8D5DA7;
+    }
+
+    .form-switch .form-check-input:focus {
+        border-color: #a78bfa;
+        box-shadow: 0 0 0 0.25rem rgba(141, 93, 167, 0.25);
+    }
+
+    /* Custom Colors */
+    .text-purple {
+        color: #8D5DA7;
+    }
+
+    .bg-purple {
+        background-color: #8D5DA7;
+    }
+
+    .btn-purple {
+        background-color: #8D5DA7;
+        color: white;
+        border: none;
+    }
+
+    .btn-purple:hover {
+        background-color: #764a8e;
+        color: white;
+    }
+
+    /* Layout Tweaks */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    /* Info Alert */
+    .alert-success-custom {
+        background-color: #f0fdf4;
+        border: 1px solid #dcfce7;
+        color: #166534;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .check-icon-circle {
+        width: 24px;
+        height: 24px;
+        background-color: #dcfce7;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #15803d;
+        font-size: 0.75rem;
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .modal-footer {
+        border-top: none;
+    }
+
+    [dir="rtl"] .form-check {
+        padding-left: 0;
+        padding-right: 2.5em;
+        /* Space for toggle */
+        margin-bottom: 0;
+    }
+
+    [dir="rtl"] .form-check .form-check-input {
+        float: right;
+        margin-right: -2.5em;
+        margin-left: 0;
+    }
+
+    .status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .status-row:last-child {
+        border-bottom: none;
+    }
+
+    .email-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f9fafb;
+    }
+
+    .email-item:last-child {
+        border-bottom: none;
+    }
+
+    .email-icon-wrapper {
+        width: 2rem;
+        height: 2rem;
+        background-color: #f3e8ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9333ea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-6 d-flex align-items-center gap-3">
+            <a href="/settings" class="text-decoration-none text-muted">
+                <i class="fa-solid fa-arrow-right fs-5"></i>
+            </a>
+            <h4 class="mb-0 fw-bold">إشعارات الموظفين</h4>
+        </div>
+        <div class="col-6 text-start d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary bg-white text-dark border"
+                onclick="openAddEmailModal()">
+                إضافة بريد إلكتروني
+            </button>
+            <button type="button" class="btn btn-purple px-4" onclick="saveSettings()">
+                حفظ
+            </button>
+        </div>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="alert alert-success-custom rounded-3 mb-4 p-3">
+        <div class="check-icon-circle">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <span style="font-size: 0.95rem;">أضف عناوين البريد الإلكتروني لفريقك وحدد حالات الطلبات التي ترغب في إرسال
+            إشعارات لهم بشأنها</span>
+    </div>
+
+    <!-- Order Statuses Card -->
+    <div class="card border-0 shadow-sm mb-4 rounded-4">
+        <div class="card-header bg-white border-bottom border-light p-4 rounded-top-4">
+            <h5 class="fw-bold mb-0">اختر حالات الطلبات التي ترغب في تفعيل الإشعارات لها</h5>
+        </div>
+        <div class="card-body p-4 pt-2">
+            <!-- Status Rows -->
+            <div class="status-row">
+                <span class="fw-medium">جديدة</span>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notify_new">
+                </div>
+            </div>
+            <div class="status-row">
+                <span class="fw-medium">قيد التجهيز</span>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notify_processing">
+                </div>
+            </div>
+            <div class="status-row">
+                <span class="fw-medium">جاهزة</span>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notify_ready">
+                </div>
+            </div>
+            <div class="status-row">
+                <span class="fw-medium">قيد التوصيل</span>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notify_delivering">
+                </div>
+            </div>
+            <div class="status-row">
+                <span class="fw-medium">مكتملة</span>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notify_completed">
+                </div>
+            </div>
+            <div class="status-row">
+                <span class="fw-medium">ملغاة</span>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notify_cancelled">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emails Card -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white border-bottom border-light p-4 rounded-top-4">
+            <h5 class="fw-bold mb-0">عناوين البريد الإلكتروني للفريق</h5>
+        </div>
+        <div class="card-body p-4">
+            <div id="emailsList">
+                <!-- Emails populated by JS -->
+                <div id="emptyEmailsState" class="text-center py-5 text-muted d-none">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                        style="width: 60px; height: 60px;">
+                        <i class="fa-regular fa-envelope fa-xl text-secondary"></i>
+                    </div>
+                    <p class="mb-0">لا توجد بيانات حالياً، ستظهر هنا عند توفرها</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Email Modal (Boostrap) -->
+<div class="modal fade" id="addEmailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <!-- Close button left for RTL? Bootstrap handles this usually by placing it at the end -->
+            </div>
+            <div class="modal-body pt-2 text-center">
+                <h5 class="modal-title fw-bold mb-4 w-100 text-end pe-2">إضافة بريد إلكتروني</h5>
+                <input type="email" class="form-control form-control-lg fs-6" id="newEmailInput"
+                    placeholder="إضافة بريد إلكتروني">
+                <div class="text-danger small mt-2 d-none text-end" id="emailError">الرجاء إدخال بريد إلكتروني صحيح
+                </div>
+            </div>
+            <div class="modal-footer justify-content-start border-0 pt-2 pb-4 px-4 gap-2">
+                <button type="button" class="btn btn-purple px-4" onclick="confirmAddEmail()">حفظ</button>
+                <button type="button" class="btn btn-outline-secondary px-4 bg-white"
+                    data-bs-dismiss="modal">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/settings/staff_notifications.js"></script>
+{% endblock %}

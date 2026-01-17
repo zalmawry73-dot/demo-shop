@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات إشعارات الأسئلة{% endblock %}
+
+{% block styles %}
+<style>
+    /* Custom Toggle Switch */
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        background-color: #e5e7eb;
+        border-color: #e5e7eb;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+        cursor: pointer;
+    }
+
+    .form-switch .form-check-input:checked {
+        background-color: #8D5DA7;
+        border-color: #8D5DA7;
+    }
+
+    .form-switch .form-check-input:focus {
+        border-color: #a78bfa;
+        box-shadow: 0 0 0 0.25rem rgba(141, 93, 167, 0.25);
+    }
+
+    .btn-purple {
+        background-color: #8D5DA7;
+        color: white;
+        border: none;
+    }
+
+    .btn-purple:hover {
+        background-color: #764a8e;
+        color: white;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .settings-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .settings-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .settings-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .preview-btn {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        color: #6b7280;
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        margin-top: 0.5rem;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .preview-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .merchant-email-section {
+        margin-top: 10px;
+        display: none;
+        /* Hidden by default toggled by JS */
+    }
+
+    .email-display {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding: 1.5rem 1.5rem 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1rem 1.5rem;
+        text-align: center;
+    }
+
+    .modal-footer {
+        border-top: none;
+        padding: 0.5rem 1.5rem 1.5rem;
+        justify-content: flex-start;
+    }
+
+    .preview-image-container {
+        background: #f3f4f6;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+
+    .preview-image-container img {
+        max-width: 100%;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" dir="rtl">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-6 d-flex align-items-center gap-3">
+            <a href="/settings" class="text-decoration-none text-muted">
+                <i class="fa-solid fa-arrow-right fs-5"></i>
+            </a>
+            <div>
+                <h4 class="mb-0 fw-bold">إعدادات إشعارات الأسئلة</h4>
+                <div class="text-muted small">إعداد إشعارات أسئلة المنتجات</div>
+            </div>
+        </div>
+        <div class="col-6 text-start">
+            <button type="button" class="btn btn-purple px-5 py-2 rounded-3" onclick="saveSettings()">
+                حفظ
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+
+            <!-- Customer Notification -->
+            <div class="settings-row">
+                <div>
+                    <h5 class="fw-bold mb-1">إشعار العميل تلقائيًا</h5>
+                    <p class="text-muted mb-2">إرسال إشعار تلقائي للعميل بعد الرد على أسئلتهم</p>
+                    <button class="preview-btn" onclick="openPreviewModal()">
+                        مثال على كيفية ظهورة في متجرك
+                    </button>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="customerNotificationToggle">
+                </div>
+            </div>
+
+            <!-- Merchant Notification -->
+            <div class="settings-row">
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <div>
+                            <h5 class="fw-bold mb-1">إشعار التاجر تلقائيًا</h5>
+                            <p class="text-muted mb-2">إشعار التاجر تلقائيًا عند إرسال سؤال جديد</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="merchantNotificationToggle">
+                        </div>
+                    </div>
+
+                    <div class="merchant-email-section" id="merchantEmailSection">
+                        <div class="d-flex align-items-center justify-content-end gap-2 mt-2"
+                            style="flex-direction: column; align-items: flex-start !important;">
+                            <div class="email-display">
+                                سيتم إرسال الإشعارات إلى البريد الإلكتروني التالي
+                                <br>
+                                <span id="currentEmailDisplay" class="text-dark fw-medium">loading...</span>
+                            </div>
+                            <button class="btn btn-outline-secondary rounded-pill px-4" onclick="openEmailModal()">
+                                تغيير البريد الإلكتروني
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">معاينة بريد العميل</h5>
+                <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="preview-image-container m-3 text-center">
+                    <!-- Placeholder for the image. In real app, we might use an img tag if we had the asset, 
+                        or HTML structure. Since user uploaded images, maybe I can't reference them directly unless I save them.
+                        I'll use a placeholder or styles to mimic the image provided. 
+                        The user uploaded uploaded_image_1. Will use a generic structure for now. -->
+                    <div class="p-4 bg-light">
+                        <div
+                            style="background: #D4AF37; height: 100px; width: 100%; margin-bottom: 20px; border-radius: 4px;">
+                        </div>
+                        <div class="bg-white p-4 shadow-sm mx-auto" style="max-width: 400px; border-radius: 8px;">
+                            <h5>اهلا أنس البار</h5>
+                            <p class="text-muted">تم الرد على سؤالك!</p>
+                            <hr>
+                            <p>هل يتوفر عسل السدر بحجم أكبر؟</p>
+                            <p class="text-success">نعم، يتوفر بالحجم الكبير (500 جرام). يمكنك طلبه...</p>
+                            <button class="btn btn-warning w-100 text-white mt-3">عرض الرد</button>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <img src="/static/images/logo.png" style="height: 30px; opacity: 0.5;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary px-5" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Email Modal -->
+<div class="modal fade" id="emailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold w-100 text-center">تغيير بريد المستلم للإشعارات</h5>
+            </div>
+            <div class="modal-body text-end">
+                <p class="text-muted mb-3">اختر عضوًا من الفريق أو أضف عضوًا جديدًا ليصله الإشعار</p>
+                <div class="mb-3">
+                    <select class="form-select" id="teamMemberSelect">
+                        <!-- Options populated by JS -->
+                        <option value="">عضو</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-start gap-2">
+                <button type="button" class="btn btn-purple px-4" onclick="saveEmailChange()">حفظ</button>
+                <button type="button" class="btn btn-outline-secondary px-4" onclick="navigateToAddMember()">إضافة عضو
+                    جديد</button>
+                <button type="button" class="btn btn-link text-muted text-decoration-none"
+                    data-bs-dismiss="modal">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/settings_questions.js"></script>
+{% endblock %}

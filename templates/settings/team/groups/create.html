@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}إنشاء مجموعة عمل | منصة التاجر{% endblock %}
+
+{% block page_title %}إنشاء مجموعة عمل{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/settings/team/groups"
+            class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center"
+            style="width: 40px; height: 40px;">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <h4 class="fw-bold mb-0">إنشاء مجموعة</h4>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary px-4" id="saveBtn" onclick="saveGroup()">حفظ</button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Group Info & Users -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">معلومات المجموعة</h5>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">الاسم</label>
+                        <input type="text" class="form-control" id="groupName" placeholder="مثال: مدير المتجر">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">المستخدمون</label>
+                        <div class="dropdown">
+                            <button
+                                class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center"
+                                type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                <span>اختر المستخدمين</span>
+                                <i class="fa-solid fa-chevron-down small"></i>
+                            </button>
+                            <div class="dropdown-menu w-100 p-2 shadow-sm" style="max-height: 250px; overflow-y: auto;">
+                                <input type="text" class="form-control mb-2 form-control-sm"
+                                    placeholder="ابحث عن مستخدم..." id="userSearchInput">
+                                <div id="usersListContainer">
+                                    <div class="text-center p-3 text-muted small">
+                                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Selected Users Tags -->
+                        <div class="d-flex flex-wrap gap-2 mt-2" id="selectedUsersContainer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permissions -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">الصلاحيات</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAllPermissions"
+                            onchange="toggleAllPermissions(this.checked)">
+                        <label class="form-check-label fw-bold" for="selectAllPermissions">منح جميع الصلاحيات</label>
+                    </div>
+                </div>
+
+                <div class="accordion" id="permissionsAccordion">
+                    <!-- Permissions generated via JS -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="groupId" value="">
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/settings_team_groups.js"></script>
+{% endblock %}

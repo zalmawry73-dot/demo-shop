@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% block styles %}
+<style>
+    /* Custom Green Switch */
+    .form-check-input:checked {
+        background-color: #10b981;
+        border-color: #10b981;
+    }
+
+    .settings-header {
+        margin-bottom: 2rem;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+
+    .setting-label {
+        font-weight: 500;
+        color: #334155;
+        font-size: 1rem;
+    }
+
+    .setting-desc {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+
+    .card-title {
+        color: #1e293b;
+        font-weight: 700;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .dependent-input {
+        margin-top: 0.5rem;
+        padding-right: 2rem;
+        /* Indent for RTL */
+    }
+</style>
+{% endblock %}
+
+<div class="container-fluid py-4" dir="rtl">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center gap-3">
+                <a href="/settings" class="btn btn-light rounded-circle shadow-sm"
+                    style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-arrow-right text-secondary"></i>
+                </a>
+                <h4 class="mb-0 fw-bold text-dark">خصائص الطلبات والمنتجات</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Orders Settings Card -->
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title">خصائص الطلب</h5>
+
+                    <!-- Guest Checkout -->
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">عرض خيار استلام الشحنة من شخص آخر</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                id="is_guest_checkout_enabled">
+                        </div>
+                    </div>
+
+                    <!-- Auto Complete Paid -->
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">تغيير حالة الطلبات المدفوعة تلقائيًا إلى "مكتمل"</div>
+                            <div class="setting-desc">عند تفعيل هذا الخيار، لا يمكن تعديل حالة الطلبات المدفوعة التي لا
+                                تحتاج إلى شحن.</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                id="auto_complete_paid_orders">
+                        </div>
+                    </div>
+
+                    <!-- Auto Ready Paid -->
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">تغيير حالة الطلبات المدفوعة تلقائيًا إلى "جاهز"</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="auto_ready_paid_orders">
+                        </div>
+                    </div>
+
+                    <!-- Enable Reorder -->
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">تفعيل خاصية إعادة الطلب</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="enable_reorder">
+                        </div>
+                    </div>
+
+                    <!-- Min Order Limit -->
+                    <div class="setting-item flex-column align-items-stretch">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="setting-label">تفعيل حد أدنى للطلب</div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                    id="min_order_limit_enabled">
+                            </div>
+                        </div>
+                        <div class="dependent-input d-none" id="min_order_input_container">
+                            <input type="number" id="min_order_limit" class="form-control mt-2"
+                                placeholder="الحد الأدنى للطلب">
+                        </div>
+                    </div>
+
+                    <!-- Max Order Limit -->
+                    <div class="setting-item flex-column align-items-stretch">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="setting-label">تفعيل حد أقصى للطلب</div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                    id="max_order_limit_enabled">
+                            </div>
+                        </div>
+                        <div class="dependent-input d-none" id="max_order_input_container">
+                            <input type="number" id="max_order_limit" class="form-control mt-2"
+                                placeholder="الحد الأقصى للطلب">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <button class="btn btn-success text-white px-5 rounded-3 fw-bold" id="saveOrdersBtn">حفظ
+                            التغييرات</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Settings Card -->
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title">خصائص المنتج</h5>
+
+                    <!-- Show Similar -->
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">عرض نتائج بحث مرنة وذكية للعملاء لسهولة الوصول للمنتجات</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="show_similar_products">
+                        </div>
+                    </div>
+
+                    <!-- Return Cancelled Quantity -->
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">إعادة الكمية للمنتجات الملغاة تلقائيًا إلى المخزون</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                id="return_cancelled_quantity">
+                        </div>
+                    </div>
+
+                    <!-- Similar on Page -->
+                    <div class="setting-item flex-column align-items-stretch">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="setting-label">عرض المنتجات المشابهة في صفحة كل منتج</div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                    id="show_similar_on_product_page">
+                            </div>
+                        </div>
+                        <div class="dependent-input d-none" id="similar_products_limit_container">
+                            <label class="form-label small text-muted mt-2">عدد المنتجات المشابهة التي ترغب
+                                بعرضها</label>
+                            <input type="number" id="similar_products_limit" class="form-control" value="4">
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Warning -->
+                    <div class="setting-item flex-column align-items-stretch">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="setting-label">عرض الكمية المتبقية من المنتج عند الوصول إلى حد المخزون الأدنى
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                    id="show_low_stock_warning">
+                            </div>
+                        </div>
+                        <div class="dependent-input d-none" id="low_stock_threshold_container">
+                            <label class="form-label small text-muted mt-2">تعيين حد أقصى للكمية</label>
+                            <input type="number" id="low_stock_threshold" class="form-control" value="10">
+                        </div>
+                    </div>
+
+                    <!-- Purchase Count -->
+                    <div class="setting-item flex-column align-items-stretch">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="setting-label">عرض عدد المرات التي تم فيها شراء المنتج</div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="show_purchase_count">
+                            </div>
+                        </div>
+                        <div class="dependent-input d-none" id="min_purchase_count_to_show_container">
+                            <label class="form-label small text-muted mt-2">الحد الأدنى للشراء الذي ترغب بعرضه</label>
+                            <input type="number" id="min_purchase_count_to_show" class="form-control" value="0">
+                        </div>
+                    </div>
+
+                    <!-- Out of stock at end -->
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">عرض المنتجات غير المتوفرة في نهاية الصفحة</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="show_out_of_stock_at_end">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <button class="btn btn-success text-white px-5 rounded-3 fw-bold" id="saveProductsBtn">حفظ
+                            التغييرات</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/settings_orders_products.js"></script>
+{% endblock %}

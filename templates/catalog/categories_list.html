@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}التصنيفات | منصة التاجر{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/css/categories.css">
+{% endblock %}
+
+{% block page_title %}إدارة التصنيفات{% endblock %}
+
+{% block content %}
+<div class="categories-page">
+
+    <!-- Filters / Actions Bar -->
+    <div class="content-header">
+        <div>
+            <h1>التصنيفات</h1>
+            <p style="color:#64748b; margin-top:5px">تنظيم منتجات المتجر وتصنيفها</p>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" onclick="window.location.href='/catalog/categories/create'">
+                <i class="fas fa-plus"></i> إنشاء تصنيف
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">هيكل التصنيفات</h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" onclick="loadCategories()">
+                    <i class="fas fa-sync-alt"></i> تحديث
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div id="categories-tree" class="categories-tree">
+                <!-- Tree will be rendered here via JS -->
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="/static/js/categories.js?v=2"></script>
+{% endblock %}

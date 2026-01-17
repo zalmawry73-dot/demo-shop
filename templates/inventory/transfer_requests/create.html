@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}إنشاء طلب نقل | منصة التاجر{% endblock %}
+
+{% block page_title %}
+{% if transfer_request %}
+تعديل طلب نقل #{{ transfer_request.id }}
+{% else %}
+إنشاء طلب نقل
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <a href="/inventory/transfer-requests" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-arrow-right"></i> عودة
+        </a>
+        <div class="actions">
+            {% if not transfer_request or transfer_request.status == 'draft' %}
+            <button type="button" class="btn btn-outline-primary me-2" onclick="saveRequest('draft')">حفظ
+                كمسودة</button>
+            <button type="button" class="btn btn-primary" onclick="saveRequest('approved')">حفظ واعتماد</button>
+            {% elif transfer_request.status == 'approved' %}
+            <button type="button" class="btn btn-warning text-dark" onclick="updateStatus('shipped')">شحن الطلب</button>
+            {% elif transfer_request.status == 'shipped' %}
+            <button type="button" class="btn btn-success" onclick="updateStatus('received')">استلام الطلب</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">تفاصيل الطلب</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">مصدر المخزن</label>
+                <select class="form-select" id="sourceWarehouse" {% if transfer_request %}disabled{% endif %}>
+                    <option value="">اختر المخزن...</option>
+                    {% for wh in warehouses %}
+                    <option value="{{ wh.id }}" {% if transfer_request and transfer_request.source_wh_id==wh.id
+                        %}selected{% endif %}>{{ wh.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">وجهة المخزن</label>
+                <select class="form-select" id="destinationWarehouse" {% if transfer_request %}disabled{% endif %}>
+                    <option value="">اختر المخزن...</option>
+                    {% for wh in warehouses %}
+                    <option value="{{ wh.id }}" {% if transfer_request and transfer_request.destination_wh_id==wh.id
+                        %}selected{% endif %}>{{ wh.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">المنتجات</h5>
+        {% if not transfer_request or transfer_request.status == 'draft' %}
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#productModal">
+            <i class="fa-solid fa-plus"></i> إضافة منتجات
+        </button>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="itemsTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50%;">الاسم / SKU</th>
+                        <th>كمية المصدر</th>
+                        <th>الكمية التي سيتم نقلها</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Items inserted via JS or server -->
+                    {% if items %}
+                    {% for item in items %}
+                    <tr data-variant-id="{{ item.variant_id }}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ item.image_url }}" alt="" class="rounded"
+                                    style="width: 40px; height: 40px; object-fit: cover;">
+                                <div class="ms-3">
+                                    <div class="fw-bold">{{ item.product_name }}</div>
+                                    <div class="text-muted small">{{ item.sku }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark source-stock">-</span></td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm qty-input" value="{{ item.qty }}"
+                                min="1" style="width: 100px;" {% if transfer_request and transfer_request.status
+                                !='draft' %}disabled{% endif %}>
+                        </td>
+                        <td>
+                            {% if not transfer_request or transfer_request.status == 'draft' %}
+                            <button class="btn btn-sm text-danger remove-row"><i class="fa-solid fa-trash"></i></button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr id="emptyRow">
+                        <td colspan="4" class="text-center py-4 text-muted">لم يتم إضافة منتجات بعد</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تحديد المنتجات</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="productSearch" placeholder="بحث عن منتج...">
+                </div>
+                <div class="list-group" id="productList">
+                    <!-- Products loaded via JS -->
+                    <div class="text-center py-3"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const API_BASE = '/api/transfer-requests';
+    const INVENTORY_API = '/api/inventory';
+    let addedVariants = new Set();
+    const isEditMode = "{{ 'true' if transfer_request else 'false' }}" === 'true';
+    const currentRequestId = "{{ transfer_request.id if transfer_request else '' }}" || null;
+
+    // Initialize existing items from DOM
+    document.querySelectorAll('#itemsTable tbody tr[data-variant-id]').forEach(tr => {
+        addedVariants.add(tr.dataset.variantId);  // Keep as string
+    });
+
+    // Load Products for Modal
+    async function loadProducts() {
+        try {
+            const response = await fetch(INVENTORY_API);
+            const products = await response.json();
+            const list = document.getElementById('productList');
+            list.innerHTML = '';
+
+            products.forEach(p => {
+                // Filter if source selected? Ideally yes, but let's show all and validate later or show stock
+                // Find stock in current selected source
+                const sourceId = parseInt(document.getElementById('sourceWarehouse').value);
+                const sourceLoc = p.locations.find(l => l.wh_id === sourceId);
+                const stock = sourceLoc ? sourceLoc.qty : 0;
+
+                const item = document.createElement('label');
+                item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                item.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <input class="form-check-input me-3" type="checkbox" value="${p.id}" data-product='${JSON.stringify(p)}' ${addedVariants.has(p.id) ? 'checked disabled' : ''}>
+                        <div>
+                            <div class="fw-bold">${p.product_name}</div>
+                            <div class="small text-muted">${p.sku}</div>
+                        </div>
+                    </div>
+                    <span class="badge ${stock > 0 ? 'bg-success' : 'bg-danger'} rounded-pill">${stock} متوفر</span>
+                `;
+                list.appendChild(item);
+
+                // Add click handler
+                item.querySelector('input').addEventListener('change', function () {
+                    if (this.checked) {
+                        addProductToTable(p, stock);
+                        addedVariants.add(p.id);
+                        this.disabled = true; // Prevent re-adding
+                        // Ideally keep modal open? Or close? User might want multiple. Keep open.
+                        // Ideally show toast "Added"
+                    }
+                });
+            });
+        } catch (e) {
+            console.error(e);
+            document.getElementById('productList').innerHTML = '<div class="alert alert-danger">فشل تحميل المنتجات</div>';
+        }
+    }
+
+    // Add row to table
+    function addProductToTable(product, stock) {
+        const tbody = document.querySelector('#itemsTable tbody');
+        document.getElementById('emptyRow')?.remove();
+
+        const tr = document.createElement('tr');
+        tr.dataset.variantId = product.id;
+        tr.innerHTML = `
+            <td>
+                <div class="d-flex align-items-center">
+                    <img src="/static/images/placeholder.png" alt="" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                    <div class="ms-3">
+                        <div class="fw-bold">${product.product_name}</div>
+                        <div class="text-muted small">${product.sku}</div>
+                    </div>
+                </div>
+            </td>
+            <td><span class="badge bg-light text-dark">${stock}</span></td>
+            <td>
+                <input type="number" class="form-control form-control-sm qty-input" value="1" min="1" max="${stock}" style="width: 100px;">
+            </td>
+            <td>
+                <button class="btn btn-sm text-danger remove-row"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+
+        tr.querySelector('.remove-row').addEventListener('click', () => {
+            tr.remove();
+            addedVariants.delete(product.id);
+            // Re-enable in modal if still loaded? reloadProducts handles it
+            // If empty
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = '<tr id="emptyRow"><td colspan="4" class="text-center py-4 text-muted">لم يتم إضافة منتجات بعد</td></tr>';
+            }
+        });
+    }
+
+    // Modal Events
+    document.getElementById('productModal').addEventListener('show.bs.modal', loadProducts);
+
+    // Search in Modal
+    document.getElementById('productSearch').addEventListener('keyup', function () {
+        const val = this.value.toLowerCase();
+        const items = document.querySelectorAll('#productList .list-group-item');
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(val) ? 'flex' : 'none';
+        });
+    });
+
+    // Save Request
+    async function saveRequest(status) {
+        const sourceWh = document.getElementById('sourceWarehouse').value;
+        const destWh = document.getElementById('destinationWarehouse').value;
+
+        if (!sourceWh || !destWh) {
+            notifier.showToast('يرجى اختيار المخزن المصدر والمستقبل', 'warning');
+            return;
+        }
+
+        if (sourceWh === destWh) {
+            notifier.showToast('لا يمكن النقل لنفس المخزن', 'warning');
+            return;
+        }
+
+        const items = [];
+        document.querySelectorAll('#itemsTable tbody tr').forEach(tr => {
+            if (tr.id === 'emptyRow') return;
+            items.push({
+                variant_id: tr.dataset.variantId,  // Keep as string (UUID)
+                qty: parseInt(tr.querySelector('.qty-input').value)
+            });
+        });
+
+        if (items.length === 0) {
+            notifier.showToast('يرجى إضافة منتجات للطلب', 'warning');
+            return;
+        }
+
+        const payload = {
+            source_wh_id: parseInt(sourceWh),
+            destination_wh_id: parseInt(destWh),
+            items: items,
+            status: status // For create this is ignored by Schema if pass in base, we might need separate update call for status approve?
+            // Wait, TransferRequestCreate doesn't have status. It defaults to draft.
+            // If we want to approve immediately, we might need to create then update?
+            // Or add status to Create schema. Let's check Schema.
+            // Schema TransferRequestCreate inherits TransferRequestBase which only has items/whs.
+            // So default is Draft.
+        };
+
+        try {
+            let res;
+            if (isEditMode) {
+                // Update
+                // For update, we might want to pass status if allowed
+                // The update schema has status.
+                payload.status = status;
+                res = await fetch(`${API_BASE}/${currentRequestId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                // Create
+                res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // If create was successful and user wanted 'approved', we send update immediately?
+                // Or we update Schema to allow status in Create.
+                // Assuming Create always Draft for now.
+                if (res.ok && status !== 'draft') {
+                    const data = await res.json();
+                    await fetch(`${API_BASE}/${data.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: status })
+                    });
+                }
+            }
+
+            if (res.ok) {
+                notifier.showFlashToast('تم حفظ طلب النقل بنجاح', 'success');
+                window.location.href = '/inventory/transfer-requests';
+            } else {
+                const err = await res.json();
+                notifier.showToast('حدث خطأ: ' + (err.detail || 'Unknown error'), 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            notifier.showToast('حدث خطأ في الاتصال', 'error');
+        }
+    }
+
+    async function updateStatus(newStatus) {
+        if (!await notifier.showConfirm('هل أنت متأكد من تغيير حالة الطلب؟')) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/${currentRequestId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                notifier.showToast('فشل تحديث الحالة', 'error');
+            }
+        } catch (e) {
+            notifier.showToast('error', 'error');
+        }
+    }
+</script>
+{% endblock %}

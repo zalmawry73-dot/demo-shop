@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات إشعارات التقييمات | منصة التاجر{% endblock %}
+
+{% block page_title %}الإعدادات{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-auto">
+        <a href="/customers/reviews" class="btn btn-outline-secondary rounded-circle">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="col">
+        <h5 class="mb-1">إعدادات الإشعارات الخاصة بمراجعة المنتجات</h5>
+        <p class="text-muted small mb-0">يمكنك إرسال إشعارات بالبريد الإلكتروني إلى عملائك لتشجيعهم على تقييم المنتجات
+            في متجرك.</p>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary px-4">حفظ</button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h6 class="card-title fw-bold mb-4">مراجعات العملاء، الموافقة والنشر التلقائي</h6>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div class="form-check form-switch-lg">
+                <input class="form-check-input" type="checkbox" id="emailNotification" checked>
+                <label class="form-check-label ms-3" for="emailNotification">
+                    <span class="d-block fw-bold">إرسال إشعار على بريدي الإلكتروني عند وجود تقييم جديد من عميل</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div class="form-check form-switch-lg">
+                <input class="form-check-input" type="checkbox" id="autoPublish">
+                <label class="form-check-label ms-3" for="autoPublish">
+                    <span class="d-block fw-bold">تفعيل الموافقة والنشر التلقائي لمراجعات العملاء</span>
+                    <span class="text-muted small">حدد الحد الأدنى للتقييم المطلوب لنشر المراجعة تلقائياً دون
+                        موافقة.</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check form-switch-lg">
+                <input class="form-check-input" type="checkbox" id="allowEdit" checked>
+                <label class="form-check-label ms-3" for="allowEdit">
+                    <span class="d-block fw-bold">تفعيل إمكانية تعديل التقييم بواسطة العميل</span>
+                    <span class="text-muted small">المدة المسموح للعميل فيها تعديل التقييم بعد نشر التقييم</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h6 class="card-title fw-bold mb-4">إشعار العملاء عن طريق</h6>
+        <p class="text-muted small mb-4">إدارة وتحرير الإشعارات التلقائية المتعلقة بالمراجعات المرسلة منك.</p>
+
+        <div class="mb-4">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="smsChannel">
+                <label class="form-check-label fw-bold" for="smsChannel">رسالة نصية (SMS)</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="emailChannel" checked>
+                <label class="form-check-label fw-bold" for="emailChannel">البريد الإلكتروني</label>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label">حدد عدد الساعات التي يجب أن يتلقى فيها العملاء طلب مراجعة بعد اكتمال الطلب عن
+                    طريق البريد الإلكتروني.</label>
+                <div class="input-group" style="max-width: 200px;">
+                    <span class="input-group-text bg-white">بعد</span>
+                    <input type="number" class="form-control" value="24">
+                    <span class="input-group-text bg-white">ساعات</span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-muted small">عنوان رسالة البريد الإلكتروني (العربية)</label>
+                <input type="text" class="form-control" value="كتابة عنوان لتشجيع التقييم">
+                <div class="text-end text-muted small mt-1">40 / 26 عدد الأحرف</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small">عنوان رسالة البريد الإلكتروني (الإنجليزية)</label>
+                <input type="text" class="form-control" placeholder="Email title">
+                <div class="text-end text-muted small mt-1">40 / 0 عدد الأحرف</div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-muted small">نص رسالة البريد الإلكتروني (العربية)</label>
+                <textarea class="form-control" rows="4"><p>كتابة محتوى الرساله&nbsp; لتشجيع التقييم</p></textarea>
+                <div class="text-end text-muted small mt-1">160 / 47 عدد الأحرف</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small">نص رسالة البريد الإلكتروني (الإنجليزية)</label>
+                <textarea class="form-control" rows="4" placeholder="Email content"></textarea>
+                <div class="text-end text-muted small mt-1">160 / 0 عدد الأحرف</div>
+            </div>
+
+            <div class="col-12">
+                <div class="d-flex gap-2">
+                    <span class="badge bg-light text-dark border">{{ "{order_id}" }}</span>
+                    <span class="badge bg-light text-dark border">{{ "{order_url}" }}</span>
+                    <span class="badge bg-light text-dark border">{{ "{customer_name}" }}</span>
+                    <span class="badge bg-light text-dark border">{{ "{store_name}" }}</span>
+                    <span class="text-muted small align-self-center">القيم المقترحة:</span>
+                </div>
+            </div>
+
+            <div class="col-12 mt-3">
+                <button class="btn btn-dark">معاينة</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Switch Styling Override -->
+<style>
+    .form-switch-lg .form-check-input {
+        width: 3em;
+        height: 1.5em;
+    }
+</style>
+{% endblock %}

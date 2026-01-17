@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS | Point of Sale</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/pos.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body dir="rtl">
+
+    <!-- Auth Overlay (PIN Pad) -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="pin-pad-container">
+            <h2>Fast Login</h2>
+            <div class="pin-display">
+                <input type="password" id="pin-input" readonly>
+            </div>
+            <div class="keypad">
+                <button onclick="appendPin('1')">1</button>
+                <button onclick="appendPin('2')">2</button>
+                <button onclick="appendPin('3')">3</button>
+                <button onclick="appendPin('4')">4</button>
+                <button onclick="appendPin('5')">5</button>
+                <button onclick="appendPin('6')">6</button>
+                <button onclick="appendPin('7')">7</button>
+                <button onclick="appendPin('8')">8</button>
+                <button onclick="appendPin('9')">9</button>
+                <button onclick="clearPin()" class="clear">C</button>
+                <button onclick="appendPin('0')">0</button>
+                <button onclick="verifyPin()" class="enter">Enter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main POS Layout -->
+    <div class="pos-container">
+        <!-- LEFT: Active Cart -->
+        <div class="pos-cart-panel">
+            <div class="cart-header">
+                <h3>Current Order</h3>
+                <button class="btn-icon" title="Clear Cart" onclick="clearCart()"><i class="fas fa-trash"></i></button>
+            </div>
+
+            <div class="cart-items" id="cart-items-container">
+                <!-- Cart Items Injected Here -->
+                <div class="empty-state">Cart is empty</div>
+            </div>
+
+            <div class="cart-footer">
+                <div class="totals">
+                    <div class="row"><span>Subtotal</span> <span id="cart-subtotal">0.00</span></div>
+                    <div class="row"><span>Tax (15%)</span> <span id="cart-tax">0.00</span></div>
+                    <div class="row total"><span>Total</span> <span id="cart-total">0.00</span></div>
+                </div>
+                <div class="actions">
+                    <button class="btn-hold" onclick="holdCart()">Hold</button>
+                    <button class="btn-pay" onclick="openPaymentModal()">Pay <span
+                            id="pay-btn-amount">0.00</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Product Grid -->
+        <div class="pos-product-panel">
+            <div class="top-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="product-search" placeholder="Search or Scan Barcode..."
+                        onkeyup="filterProducts()">
+                </div>
+                <div class="user-info">
+                    <span id="cashier-name">Cashier</span>
+                    <button onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+
+            <div class="categories-bar">
+                <button class="active" onclick="filterCategory('all')">All</button>
+                <button onclick="filterCategory('perfume')">Perfumes</button>
+                <button onclick="filterCategory('accessory')">Accessories</button>
+            </div>
+
+            <div class="product-grid" id="product-grid">
+                <!-- Products Injected Here -->
+                <div class="product-card" onclick="addToCart(1, 'Perfume A', 100)">
+                    <div class="img-placeholder">IMG</div>
+                    <h4>Perfume A</h4>
+                    <span class="price">100.00 SAR</span>
+                </div>
+                <div class="product-card" onclick="addToCart(2, 'Sample B', 20)">
+                    <div class="img-placeholder">IMG</div>
+                    <h4>Sample B</h4>
+                    <span class="price">20.00 SAR</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Split Payment Modal -->
+    <div id="payment-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Payment</h3>
+                <button onclick="closePaymentModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-summary">
+                    <div class="big-total">Total: <span id="modal-total-amount">0.00</span> SAR</div>
+                    <div class="remaining">Remaining: <span id="payment-remaining" class="danger">0.00</span></div>
+                </div>
+
+                <div class="payment-methods">
+                    <div class="method">
+                        <label>Cash</label>
+                        <input type="number" id="pay-cash" value="0" oninput="calculateRemaining()">
+                    </div>
+                    <div class="method">
+                        <label>Card</label>
+                        <input type="number" id="pay-card" value="0" oninput="calculateRemaining()">
+                    </div>
+                </div>
+
+                <button class="btn-finalize" id="btn-finalize-pay" onclick="processPayment()" disabled>Complete
+                    Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State ---
+        let cart = [];
+        let pin = "";
+        let currentTotal = 0;
+        let currentCategory = null;
+        let searchTimeout = null;
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial Load
+            fetchProducts();
+
+            // Check Auth (Simple check)
+            if (!localStorage.getItem("access_token")) {
+                window.location.href = "/login";
+            } else {
+                document.getElementById('cashier-name').innerText = localStorage.getItem("username") || "Cashier";
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("username");
+            window.location.href = "/login";
+        }
+
+        // --- API Helpers ---
+        function getHeaders() {
+            return {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            };
+        }
+
+        async function fetchProducts(search = "", category = "") {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '<div class="loading">Loading...</div>';
+
+            try {
+                let url = `/api/pos/products?`;
+                if (search) url += `search=${encodeURIComponent(search)}&`;
+                if (category && category !== 'all') url += `category_id=${category}`;
+
+                const response = await fetch(url, { headers: getHeaders() });
+                if (!response.ok) throw new Error("Failed to load products");
+
+                const products = await response.json();
+                renderProductGrid(products);
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = `<div class="error">Error loading products: ${err.message}</div>`;
+            }
+        }
+
+        function renderProductGrid(products) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = "";
+
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="empty-state">No products found</div>';
+                return;
+            }
+
+            products.forEach(p => {
+                const el = document.createElement('div');
+                el.className = 'product-card';
+                el.onclick = () => addToCart(p.id, p.name, p.price);
+                el.innerHTML = `
+                    <div class="img-placeholder">${p.image}</div>
+                    <h4>${p.name}</h4>
+                    <span class="price">${p.price.toFixed(2)} SAR</span>
+                `;
+                grid.appendChild(el);
+            });
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('product-search').value;
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                fetchProducts(query, currentCategory);
+            }, 300); // 300ms debounce
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            // Update active button
+            const btns = document.querySelectorAll('.categories-bar button');
+            btns.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active'); // Assumes event is passed or bound
+
+            fetchProducts(document.getElementById('product-search').value, cat);
+        }
+
+
+        // --- PIN Logic ---
+        function appendPin(num) {
+            pin += num;
+            document.getElementById('pin-input').value = pin;
+        }
+        function clearPin() {
+            pin = "";
+            document.getElementById('pin-input').value = "";
+        }
+        function verifyPin() {
+            // In a real app, verify against API /auth/pin-login or similar.
+            // For now, keep mock or use the Admin User pass? 
+            // We'll trust the 1234 for "Fast Login" simulation, 
+            // OR we can just hide it if already logged in via token.
+            if (pin === "1234") {
+                document.getElementById('auth-overlay').style.display = 'none';
+            } else {
+                notifier.showToast("Invalid PIN (Try 1234)", "error");
+                clearPin();
+            }
+        }
+
+        // --- Cart Logic ---
+        function addToCart(id, name, price) {
+            const existing = cart.find(item => item.id === id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ id, name, price, qty: 1 });
+            }
+            renderCart();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = "";
+            let subtotal = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="empty-state">Cart is empty</div>';
+            } else {
+                cart.forEach(item => {
+                    subtotal += item.price * item.qty;
+                    container.innerHTML += `
+                        <div class="cart-item">
+                            <div class="info">
+                                <strong>${item.name}</strong>
+                                <small>${item.price.toFixed(2)} SAR</small>
+                            </div>
+                            <div class="qty-control">
+                                <button onclick="addToCart(${item.id}, '${item.name}', ${item.price})">+</button>
+                                <span>${item.qty}</span>
+                                <button onclick="removeFromCart(${item.id})">-</button>
+                            </div>
+                            <div class="item-total">${(item.price * item.qty).toFixed(2)}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            const tax = subtotal * 0.15;
+            currentTotal = subtotal + tax;
+
+            document.getElementById('cart-subtotal').innerText = subtotal.toFixed(2);
+            document.getElementById('cart-tax').innerText = tax.toFixed(2);
+            document.getElementById('cart-total').innerText = currentTotal.toFixed(2);
+            document.getElementById('pay-btn-amount').innerText = currentTotal.toFixed(2);
+        }
+
+        function clearCart() {
+            cart = [];
+            renderCart();
+        }
+
+        function holdCart() {
+            notifier.showToast("Order Held (Not Implemented)", "info");
+        }
+
+        // --- Payment Logic ---
+        function openPaymentModal() {
+            if (cart.length === 0) return notifier.showToast("Cart is empty", "warning");
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('modal-total-amount').innerText = currentTotal.toFixed(2);
+            document.getElementById('pay-cash').value = 0;
+            document.getElementById('pay-card').value = 0;
+            calculateRemaining();
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        function calculateRemaining() {
+            const cash = parseFloat(document.getElementById('pay-cash').value) || 0;
+            const card = parseFloat(document.getElementById('pay-card').value) || 0;
+            const paid = cash + card;
+            const remaining = currentTotal - paid;
+
+            const el = document.getElementById('payment-remaining');
+            el.innerText = remaining.toFixed(2);
+
+            const btn = document.getElementById('btn-finalize-pay');
+            if (remaining <= 0.05) { // Tolerance
+                el.classList.remove('danger');
+                el.classList.add('success');
+                el.innerText = "Paid" + (remaining < 0 ? ` (Change: ${Math.abs(remaining).toFixed(2)})` : "");
+                btn.disabled = false;
+            } else {
+                el.classList.add('danger');
+                el.classList.remove('success');
+                btn.disabled = true;
+            }
+        }
+
+        async function processPayment() {
+            const btn = document.getElementById("btn-finalize-pay");
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            // Construct Payload
+            const orderPayload = {
+                // POS usually assigns a walked-in Guest customer by default, or we can select one.
+                // For now send null customer_id to trigger Guest creation backend side.
+                customer_id: null,
+                items: cart.map(i => ({ variant_id: i.id, quantity: i.qty })),
+                payment_method: "multi",
+                payment_details: {
+                    cash: parseFloat(document.getElementById('pay-cash').value) || 0,
+                    card: parseFloat(document.getElementById('pay-card').value) || 0
+                }
+            };
+
+            try {
+                const response = await fetch("/api/orders", {
+                    method: "POST",
+                    headers: getHeaders(),
+                    body: JSON.stringify(orderPayload)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || "Payment Failed");
+                }
+
+                const data = await response.json();
+                // alert(`Order Success! ID: ${data.id}`);
+
+                // Show Success & Reset
+                closePaymentModal();
+                clearCart();
+                notifier.showToast(`Order #${data.id} Completed Successfully!`, "success");
+
+            } catch (err) {
+                console.error(err);
+                notifier.showToast("Error: " + err.message, "error");
+                btn.disabled = false;
+                btn.innerText = "Complete Payment";
+            }
+        }
+    </script>
+</body>
+
+</html>
