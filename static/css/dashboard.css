@@ -60,6 +60,15 @@ ul {
     overflow-y: auto;
 }
 
+/* Sidebar Hidden State (works on all screen sizes) */
+.sidebar:not(.active) {
+    transform: translateX(100%);
+}
+
+.sidebar.active {
+    transform: translateX(0);
+}
+
 .sidebar::-webkit-scrollbar {
     width: 6px;
 }
@@ -88,12 +97,17 @@ ul {
 }
 
 .sidebar-header .close-sidebar-btn {
-    display: none;
+    display: block;
     background: none;
     border: none;
     color: #fff;
     font-size: 1.2rem;
     cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.sidebar-header .close-sidebar-btn:hover {
+    opacity: 0.7;
 }
 
 .sidebar-nav {
@@ -206,6 +220,11 @@ ul {
     flex-direction: column;
     min-height: 100vh;
     transition: margin-right var(--transition-speed) ease;
+}
+
+/* Main wrapper when sidebar is hidden */
+.sidebar:not(.active)~.main-wrapper {
+    margin-right: 0;
 }
 
 /* Top Header */
