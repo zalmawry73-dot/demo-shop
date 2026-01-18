@@ -290,12 +290,10 @@
 
             // 1. Mobile Sidebar Toggle
             document.getElementById('openSidebar')?.addEventListener('click', () => {
-                sidebar.classList.toggle('open');
-                mainWrapper.classList.toggle('sidebar-open');
+                sidebar.classList.toggle('active');
             });
             document.getElementById('closeSidebar')?.addEventListener('click', () => {
-                sidebar.classList.remove('open');
-                mainWrapper.classList.remove('sidebar-open');
+                sidebar.classList.remove('active');
             });
 
             // 2. Sidebar persistence & Active Link Logic
