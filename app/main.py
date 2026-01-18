@@ -49,7 +49,7 @@ async def main_dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
 # Startup Event (Optional: Database Check)
-from app.core.database import engine, Base
+from app.core.database import engine, Base, AsyncSessionLocal
 @app.on_event("startup")
 async def startup():
     async with engine.begin() as conn:
@@ -63,4 +63,34 @@ async def startup():
         from app.modules.settings import models as set_models
         from app.modules.auth import models as auth_models
         from app.modules.catalog import models as catalog_models
+        from app.modules.customers import models as customers_models
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Seed default admin user if not exists
+    from app.modules.auth.models import User, UserRole, SecuritySettings
+    from app.core.security import get_password_hash
+    from sqlalchemy import select
+    
+    async with AsyncSessionLocal() as session:
+        stmt = select(User).where(User.username == "admin")
+        result = await session.execute(stmt)
+        admin_user = result.scalar_one_or_none()
+        
+        if not admin_user:
+            print("Creating default admin user...")
+            admin_user = User(
+                username="admin",
+                email="admin@store.com",
+                password_hash=get_password_hash("admin123"),
+                role=UserRole.ADMIN,
+                full_name="System Administrator",
+                is_active=True,
+                token_version=1
+            )
+            admin_user.security_settings = SecuritySettings()
+            session.add(admin_user)
+            await session.commit()
+            print("✅ Default admin user created successfully!")
+        else:
+            print("ℹ️  Admin user already exists, skipping seed.")
+
