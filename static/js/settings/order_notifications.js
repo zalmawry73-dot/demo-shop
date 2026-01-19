@@ -272,7 +272,7 @@ function previewTemplate(id) {
         '{order_id}': '#1024',
         '{order_status}': STATUS_NAMES[template.event_type] || 'جديد',
         '{order_url}': 'https://z.id/xyz123',
-        '{store_name}': 'متجر زد التجريبي'
+        '{store_name}': '  '
     };
 
     for (const [key, value] of Object.entries(dummyData)) {
